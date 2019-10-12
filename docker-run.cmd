@@ -1,0 +1,1 @@
+docker run -p7474:7474 -p7473:7473 -p7687:7687 vladbatushkov/neo4j-apoc-algo-graphql:latest
