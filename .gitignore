@@ -1,7 +1,4 @@
 .dockerignore
-import
-plugins
-logs
 .vs
 generator/bin
 generator/obj
