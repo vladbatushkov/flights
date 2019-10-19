@@ -1,11 +1,22 @@
-FROM vladbatushkov/neo4j-apoc-algo-graphql:latest
+# FROM vladbatushkov/neo4j-apoc-algo-graphql:latest
+FROM vladbatushkov/neo4j-apoc-algo-graphql:test
 
-ENV REMOTE_IMPORT https://github.com/vladbatushkov/flights/raw/master/import
-ENV HOME_IMPORT ./var/lib/neo4j/import
+ENV REMOTE_IMPORT=https://github.com/vladbatushkov/flights/raw/master/import
 
-ADD ${REMOTE_IMPORT}/airlines_headers.csv ${HOME_IMPORT}/airlines_headers.csv
-ADD ${REMOTE_IMPORT}/airlines.csv ${HOME_IMPORT}/airlines.csv
+ENV NEO4J_AUTH=none
+ENV NEO4J_dbms_active__database=flights.db
 
-RUN ./var/lib/neo4j/bin/neo4j-admin import --mode=csv --database=flights.db --nodes:Airline ../import/airlines_headers.csv,../import/airlines.csv --ignore-duplicate-nodes=true --ignore-missing-nodes=true
+# ADD import.sh import.sh
+ADD ${REMOTE_IMPORT}/airlines_headers.csv import/airlines_headers.csv
+ADD ${REMOTE_IMPORT}/airlines.csv import/airlines.csv
+
+# RUN bin/neo4j-admin import --database=flights.db --mode=csv --nodes:Airline=import/airlines_headers.csv,import/airlines.csv
+
+# ENV EXTENSION_SCRIPT=import.sh
+
+# VOLUME /data
+# VOLUME /logs
+# VOLUME /import
 
 CMD [ "neo4j" ]
+# bin/neo4j-admin import --database=flights.db --mode=csv --nodes:Airline=import/airlines_headers.csv,import/airlines.csv && tail -f logs/neo4j.log

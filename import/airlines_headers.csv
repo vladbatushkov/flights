@@ -1,1 +1,1 @@
-airlineId:ID,name:string,code:string,country:string,:LABEL
+airline_id:ID,name:STRING,code:STRING,country:STRING
