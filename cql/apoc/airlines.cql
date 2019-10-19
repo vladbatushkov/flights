@@ -1,1 +1,1 @@
-CALL apoc.import.csv([{fileName: 'file:/persons.csv', labels: ['Person']}], [], {})
+CALL apoc.import.csv([{fileName: 'airlines.csv', labels: ['Airline']}], [], {})
