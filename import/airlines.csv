@@ -1,4 +1,3 @@
-airline_id:ID,name:STRING,code:STRING,country:STRING
 3,1Time Airline,1T,South Africa
 10,40-Mile Air,Q5,United States
 13,Ansett Australia,AN,Australia
