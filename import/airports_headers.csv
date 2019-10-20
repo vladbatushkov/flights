@@ -1,1 +1,1 @@
-airport_id:ID,name:STRING,code_iata:STRING,country:STRING,city:STRING,location:POINT{crs:WGS-84},offset_hours_utc:INT
+airport_id:ID,name:STRING,code_iata:STRING,country:STRING,city:STRING,location:POINT{crs:WGS-84},offset_hours_utc:FLOAT
