@@ -1,1 +1,0 @@
-airport_id:ID,name:STRING,code_iata:STRING,country:STRING,city:STRING,location:POINT,offset_hours_utc:FLOAT
