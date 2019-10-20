@@ -1,3 +1,4 @@
+airline_id:ID,name:STRING,code_iata:STRING,country:STRING,price_x:FLOAT
 airline_3,1Time Airline,1T,South Africa,0.94
 airline_10,40-Mile Air,Q5,United States,0.99
 airline_13,Ansett Australia,AN,Australia,1

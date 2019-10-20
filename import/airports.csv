@@ -1,3 +1,4 @@
+airport_id:ID,name:STRING,code_iata:STRING,country:STRING,city:STRING,location:POINT,offset_hours_utc:FLOAT
 airport_1,Goroka Airport,GKA,Papua New Guinea,Goroka,"{latitude:-6.08168983459, longitude:145.391998291}",10
 airport_2,Madang Airport,MAG,Papua New Guinea,Madang,"{latitude:-5.20707988739, longitude:145.789001465}",10
 airport_3,Mount Hagen Kagamuga Airport,HGU,Papua New Guinea,Mount Hagen,"{latitude:-5.82678985595703, longitude:144.296005249023}",10
