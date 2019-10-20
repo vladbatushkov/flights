@@ -1,1 +1,0 @@
-CALL apoc.import.csv([{fileName: 'airlines.csv', labels: ['Airline']}], [], {})

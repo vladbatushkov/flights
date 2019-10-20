@@ -1,1 +1,1 @@
-airline_id:ID,name:STRING,code:STRING,country:STRING
+airline_id:ID,name:STRING,code_iata:STRING,country:STRING,price_x:FLOAT
