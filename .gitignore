@@ -2,3 +2,4 @@
 .vs
 generator/bin
 generator/obj
+neo4j-flights/import

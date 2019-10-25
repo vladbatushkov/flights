@@ -7,9 +7,16 @@ using System.Threading.Tasks;
 
 namespace FlightsGenerator
 {
+    public enum Types
+    {
+        None = 0,
+        Node,
+        Relationship
+    }
+
     #region Nodes
 
-    public class Airline
+    public class Airline : IEquatable<Airline>
     {
         public const string File = "airlines.csv";
         public static string Header = "code_iata:ID,name:STRING,country:STRING";
@@ -17,16 +24,14 @@ namespace FlightsGenerator
         private const string lco = "Lowcoster";
         private const string ord = "Ordinary";
 
-        public string Id { get; private set; }
         public string Name { get; private set; }
         public string Code { get; private set; }
         public string Country { get; private set; }
         public double PriceX { get; private set; }
 
-        public static Airline Create(string id, string name, string code, string country)
+        public static Airline Create(string name, string code, string country)
             => new Airline
             {
-                Id = $"airline_{id}",
                 Name = name,
                 Code = code,
                 Country = country,
@@ -44,6 +49,11 @@ namespace FlightsGenerator
             => Code;
 
         public static string MapRow(Airline a) => string.Join(',', new[] { a.Code, a.Name, a.Country });
+
+        public bool Equals(Airline other)
+            => Code == other.Code;
+        public override int GetHashCode()
+            => Code.GetHashCode();
     }
 
     public class Airport
@@ -51,7 +61,6 @@ namespace FlightsGenerator
         public static string File = "airports.csv";
         public static string Header = "code_iata:ID,name:STRING,country:STRING,city:STRING,location:POINT,offset_hours_utc:FLOAT";
 
-        public string Id { get; private set; }
         public string Name { get; private set; }
         public string Code { get; private set; }
         public string Country { get; private set; }
@@ -60,10 +69,9 @@ namespace FlightsGenerator
         public string LocationJSON => $"\"{{latitude:{Location.lati}, longitude:{Location.longi}}}\"";
         public short OffsetUTC { get; private set; }
 
-        public static Airport Create(string id, string name, string code, string country, string city, double lati, double longi, short offsetUTC)
+        public static Airport Create(string name, string code, string country, string city, double lati, double longi, short offsetUTC)
             => new Airport
             {
-                Id = $"airport_{id}",
                 Name = name,
                 Code = code,
                 Country = country,
@@ -78,16 +86,17 @@ namespace FlightsGenerator
         public static string MapRow(Airport a) => string.Join(',', new[] { a.Code, a.Name, a.Country, a.City, a.LocationJSON, a.OffsetUTC.ToString() });
     }
 
-    public class Flight<TAirport, TAirline>
+    public class Flight<TAirport, TAirline> : IEquatable<Flight<TAirport, TAirline>>
     {
         public static string FileRoutes = "routes.csv";
-        public static string FileFlights(DateTime day) => string.Format($"flights_{day.ToString("yyyMMdd")}.csv");
-        public static string Header => "id:ID,code:STRING,departs:STRING,duration:STRING,distance_km:INT,price:INT";
+        public static string FileFlightsHeader() => string.Format($"flights_header.csv");
+        public static string FileFlights(DateTime day) => string.Format($"flights_data_{day.ToString("yyyMMdd")}.csv");
+        public static string Header => "flightNumber:ID,departs:STRING,duration:STRING,distance_km:INT,price:INT";
 
-        private const double basePricePerKm = 10.0d; // 20 THB per km, local Motobike price
+        private const double basePricePerKm = 10.0d;
 
         public TAirline Airline { get; private set; }
-        public string FlightsNo => $"{Airline}_{From}_{To}";
+        public string FlightNumber => $"{Airline}_{From}_{To}";
         public double Price => Math.Round((Airline is Airline airline) ? airline.PriceX * Distance * basePricePerKm * (1d + (new Random().Next(0, 3) / 10d)) : 0d, 0);
         public double Duration => Math.Round((Airline is Airline airline) ? Distance / (airline.PriceX * 1000) : 0d, 2);
         public TAirport From { get; private set; }
@@ -125,12 +134,21 @@ namespace FlightsGenerator
 
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> f)
-            => string.Join(',', new[] { $"{f.FlightsNo}_{day.ToString("yyyMMdd")}", f.FlightsNo, f.Departs, f.Duration.ToString(), f.Distance.ToString(), f.Price.ToString() });
+            => string.Join(',', new[] { $"{f.FlightNumber}_{day.ToString("yyyMMdd")}", f.Departs, f.Duration.ToString(), f.Distance.ToString(), f.Price.ToString() });
+
+        public bool Equals(Flight<TAirport, TAirline> other)
+            => (From is Airport from && To is Airport to && other.From is Airport otherFrom && other.To is Airport otherTo)
+                ? from.Code == otherFrom.Code && to.Code == otherTo.Code
+                : false;
+
+        public override int GetHashCode()
+            => (From is Airport from && To is Airport to) ? (from.Code + to.Code).GetHashCode() : 0;
     }
 
     public class AirportDay
     {
-        public static string File(DateTime day) => string.Format($"airportDay_{day.ToString("yyyyMMdd")}.csv");
+        public static string FileHeader() => string.Format($"airportDay_header.csv");
+        public static string File(DateTime day) => string.Format($"airportDay_data_{day.ToString("yyyyMMdd")}.csv");
 
         public static string Header = "code:ID";
 
@@ -158,29 +176,32 @@ namespace FlightsGenerator
 
     public class HasDay
     {
-        public static string File(DateTime day) => string.Format($"hasDay_{day.ToString("yyyyMMdd")}.csv");
+        public static string FileHeader() => string.Format($"hasDay_header.csv");
+        public static string File(DateTime day) => string.Format($"hasDay_data_{day.ToString("yyyyMMdd")}.csv");
         public static string Header => ":START_ID,:END_ID";
         public static Func<Airport, string> MapRow(DateTime day)
             => (Airport a)
-            => string.Join(',', new[] { a.Id, AirportDay.Create(a, day).Code });
+            => string.Join(',', new[] { a.Code, AirportDay.Create(a, day).Code });
     }
 
     public class InFlight
     {
-        public static string File(DateTime day) => string.Format($"inFlight_{day.ToString("yyyyMMdd")}.csv");
+        public static string FileHeader() => string.Format($"inFlight_header.csv");
+        public static string File(DateTime day) => string.Format($"inFlight_data_{day.ToString("yyyyMMdd")}.csv");
         public static string Header => ":START_ID,:END_ID,:TYPE";
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> a)
-            => string.Join(',', new[] { AirportDay.Create(a.From, day).Code, a.FlightsNo, $"{a.From.Code}_FLIGHT" });
+            => string.Join(',', new[] { AirportDay.Create(a.From, day).Code, $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", $"{a.From.Code}_FLIGHT" });
     }
 
     public class OutFlight
     {
-        public static string File(DateTime day) => string.Format($"outFlight_{day.ToString("yyyyMMdd")}.csv");
+        public static string FileHeader() => string.Format($"outFlight_header.csv");
+        public static string File(DateTime day) => string.Format($"outFlight_data_{day.ToString("yyyyMMdd")}.csv");
         public static string Header => ":START_ID,:END_ID,:TYPE";
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> a)
-            => string.Join(',', new[] { a.FlightsNo, AirportDay.Create(a.From, day).Code, $"{a.From.Code}_FLIGHT" });
+            => string.Join(',', new[] { $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", AirportDay.Create(a.To, day).Code, $"{a.From.Code}_FLIGHT" });
     }
 
     #endregion
@@ -192,12 +213,6 @@ namespace FlightsGenerator
 
         private const string fileLog = "log.txt";
 
-        private static readonly DateTime fromDate = DateTime.Parse("2019-11-01");
-        private static readonly DateTime toDate = DateTime.Parse("2019-11-03");
-
-        private static StreamWriter logWriter;
-
-
         /// <summary>
         /// Flights schedule generator
         /// arg1 = date from, "yyyy-MM-dd"
@@ -208,145 +223,188 @@ namespace FlightsGenerator
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            void log(string message)
+            var runner = new Runner();
+            runner.Run(args);
+        }
+
+        public class Runner
+        {
+            private readonly DateTime fromDate = DateTime.Parse("2019-11-01");
+            private readonly DateTime toDate = DateTime.Parse("2019-11-03");
+
+            private StreamWriter logWriter;
+
+            private volatile int countNodes;
+            private volatile int countRelationships;
+
+            public void Run(string[] args)
             {
-                Console.WriteLine(message);
-                logWriter.WriteLine($"{DateTime.Now.ToLongTimeString()}: {message}");
-            }
-
-            try
-            {
-                IDictionary<string, Airline> airlineCache = null;
-                IDictionary<string, Airport> airportCache = null;
-                IEnumerable<Flight<string, string>> routeCache = null;
-                IEnumerable<Flight<Airport, Airline>> flightsCache = null;
-
-                IDictionary<string, Airline> sourceAirlines()
-                    => File.ReadAllLines(dataFolder + Airline.File)
-                        .Skip(1)
-                        .Select(split)
-                        .Where(x => x.Length > 7 && !string.IsNullOrWhiteSpace(x[3]) && x[7] == "Y")
-                        .Select(x => tryToMap(x, y => Airline.Create(y[0], y[1], y[3], y[6])))
-                        .Where(x => x != null)
-                        .ToDictionary(x => x.Id, x => x);
-
-                IDictionary<string, Airport> sourceAirports()
-                    => File.ReadAllLines(dataFolder + Airport.File)
-                        .Skip(1)
-                        .Select(split)
-                        .Where(x => x.Length > 9 && !string.IsNullOrWhiteSpace(x[4]))
-                        .Select(x => tryToMap(x, y => Airport.Create(y[0], y[1], y[4], y[3], y[2], Convert.ToDouble(y[6]), Convert.ToDouble(y[7]), Convert.ToInt16(y[9]))))
-                        .Where(x => x != null)
-                        .ToDictionary(x => x.Id, x => x);
-
-                IEnumerable<Flight<string, string>> sourceRoutes()
-                    => File.ReadAllLines(dataFolder + Flight<string, string>.FileRoutes)
-                        .Skip(1)
-                        .Select(split)
-                        .Where(x => x.Length > 5 && !string.IsNullOrWhiteSpace(x[3]) && !string.IsNullOrWhiteSpace(x[5]))
-                        .Select(x => tryToMap(x, y => Flight<string, string>.Create($"airline_{y[1]}", $"airport_{y[3]}", $"airport_{y[5]}")))
-                        .Where(x => x != null)
-                        .ToList();
-
-                IEnumerable<Flight<Airport, Airline>> sourceFlights(
-                    IDictionary<string, Airline> airlines,
-                    IDictionary<string, Airport> airports,
-                    IEnumerable<Flight<string, string>> routes
-                    )
+                void log(string message)
                 {
-                    var result = new List<Flight<Airport, Airline>>();
-                    foreach (var route in routes)
-                    {
-                        if (airlines.TryGetValue(route.Airline, out var airline)
-                            && airports.TryGetValue(route.From, out var from)
-                            && airports.TryGetValue(route.To, out var to)
-                            && airline.Country == from.Country) // Only Airline from same Country operate Flights from deaprture Airport
-                        {
-                            result.Add(Flight<Airport, Airline>.Create(airline, from, to));
-                        }
-                    }
-                    return result;
+                    Console.WriteLine(message);
+                    logWriter.WriteLine($"{DateTime.Now.ToLongTimeString()}: {message}");
                 }
 
-                T tryToMap<T>(string[] arr, Func<string[], T> map) where T : class
+                try
                 {
-                    try { return map(arr); }
-                    catch { return null; }
+                    IDictionary<string, Airline> airlineCache = null;
+                    IDictionary<string, Airport> airportCache = null;
+                    IEnumerable<Flight<string, string>> routeCache = null;
+                    IEnumerable<Flight<Airport, Airline>> flightsCache = null;
+
+                    IDictionary<string, Airline> sourceAirlines()
+                        => File.ReadAllLines(dataFolder + Airline.File)
+                            .Skip(1)
+                            .Select(split)
+                            .Where(x => x.Length > 7 && !string.IsNullOrWhiteSpace(x[3]) && x[3] != "-" && x[7] == "Y")
+                            .Select(x => tryToMap(x, y => Airline.Create(y[1], y[3], y[6])))
+                            .Where(x => x != null)
+                            .Distinct()
+                            .ToDictionary(x => x.Code, x => x);
+
+                    IDictionary<string, Airport> sourceAirports()
+                        => File.ReadAllLines(dataFolder + Airport.File)
+                            .Skip(1)
+                            .Select(split)
+                            .Where(x => x.Length > 9 && !string.IsNullOrWhiteSpace(x[4]))
+                            .Select(x => tryToMap(x, y => Airport.Create(y[1], y[4], y[3], y[2], Convert.ToDouble(y[6]), Convert.ToDouble(y[7]), Convert.ToInt16(y[9]))))
+                            .Where(x => x != null)
+                            .ToDictionary(x => x.Code, x => x);
+
+                    IEnumerable<Flight<string, string>> sourceRoutes()
+                        => File.ReadAllLines(dataFolder + Flight<string, string>.FileRoutes)
+                            .Skip(1)
+                            .Select(split)
+                            .Where(x => x.Length > 4 && !string.IsNullOrWhiteSpace(x[2]) && !string.IsNullOrWhiteSpace(x[4]))
+                            .Select(x => tryToMap(x, y => Flight<string, string>.Create($"{y[0]}", $"{y[2]}", $"{y[4]}")))
+                            .Where(x => x != null)
+                            .ToList();
+
+                    IEnumerable<Flight<Airport, Airline>> sourceFlights(
+                        IDictionary<string, Airline> airlines,
+                        IDictionary<string, Airport> airports,
+                        IEnumerable<Flight<string, string>> routes
+                        )
+                    {
+                        var result = new HashSet<Flight<Airport, Airline>>();
+                        foreach (var route in routes)
+                        {
+                            if (airlines.TryGetValue(route.Airline, out var airline)
+                                && airports.TryGetValue(route.From, out var from)
+                                && airports.TryGetValue(route.To, out var to))
+                            {
+                                result.Add(Flight<Airport, Airline>.Create(airline, from, to));
+                            }
+                        }
+                        return result.Distinct();
+                    }
+
+                    T tryToMap<T>(string[] arr, Func<string[], T> map) where T : class
+                    {
+                        try { return map(arr); }
+                        catch { return null; }
+                    }
+
+                    string[] split(string str)
+                        => str.Split(",", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(y => y.Replace("\"", "").Replace("\\N", "")).ToArray();
+
+                    void write<T>(IEnumerable<T> items, string file, string header, Func<T, string> mapRow, Types type = Types.None)
+                    {
+                        var path = importFolder + file;
+                        var count = 0;
+                        using (var fileWriter = new StreamWriter(path))
+                        {
+                            if (!string.IsNullOrEmpty(header))
+                            {
+                                fileWriter.WriteLine(header);
+                            }
+                            foreach (var item in items)
+                            {
+                                fileWriter.WriteLine(mapRow(item));
+                                count++;
+                            }
+                            switch (type)
+                            {
+                                case Types.Node:
+                                    countNodes += count;
+                                    log($"File {path} of {count} node items generated");
+                                    break;
+                                case Types.Relationship:
+                                    countRelationships += count;
+                                    log($"File {path} of {count} relationship items generated");
+                                    break;
+                                default:
+                                    log($"File {path} generated");
+                                    break;
+                            }
+                        }
+                    }
+
+                    logWriter = new StreamWriter(importFolder + fileLog, true);
+                    log($"Flights import started");
+
+                    Parallel.Invoke(
+                        () =>
+                        {
+                            airlineCache = sourceAirlines();
+                            write(airlineCache.Values, Airline.File, Airline.Header, Airline.MapRow, Types.Node);
+                        },
+                        () =>
+                        {
+                            airportCache = sourceAirports();
+                            write(airportCache.Values, Airport.File, Airport.Header, Airport.MapRow, Types.Node);
+                        },
+                        () =>
+                        {
+                            routeCache = sourceRoutes();
+                        }
+                    );
+
+                    var days = from d in Enumerable.Range(0, toDate.Subtract(fromDate).Days) select fromDate.AddDays(d);
+                    flightsCache = sourceFlights(airlineCache, airportCache, routeCache);
+                    Parallel.Invoke(
+                        () =>
+                        {
+                            write(flightsCache, FliesTo.File, FliesTo.Header, FliesTo.MapRow, Types.Relationship);
+                        },
+                        () =>
+                        {
+                            write(new object[] { }, AirportDay.FileHeader(), AirportDay.Header, (x) => string.Empty);
+                            write(new object[] { }, Flight<string, string>.FileFlightsHeader(), Flight<string, string>.Header, (x) => string.Empty);
+                            foreach (var day in days)
+                            {
+                                write(airportCache.Select(x => AirportDay.Create(x.Value, day)), AirportDay.File(day), string.Empty, AirportDay.MapRow, Types.Node);
+                                write(flightsCache, Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node);
+                            }
+                        },
+                        () =>
+                        {
+                            write(new object[] { }, HasDay.FileHeader(), HasDay.Header, (x) => string.Empty);
+                            write(new object[] { }, InFlight.FileHeader(), InFlight.Header, (x) => string.Empty);
+                            write(new object[] { }, OutFlight.FileHeader(), OutFlight.Header, (x) => string.Empty);
+                            foreach (var day in days)
+                            {
+                                write(airportCache.Values, HasDay.File(day), string.Empty, HasDay.MapRow(day), Types.Relationship);
+                                write(flightsCache, InFlight.File(day), string.Empty, InFlight.MapRow(day), Types.Relationship);
+                                write(flightsCache, OutFlight.File(day), string.Empty, OutFlight.MapRow(day), Types.Relationship);
+                            }
+                        }
+                    );
+
+                    log($"Total {countNodes} nodes generated");
+                    log($"Total {countRelationships} relationships generated");
+                    log($"Flights import finished");
+                    logWriter.Close();
                 }
-
-                string[] split(string str)
-                    => str.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(y => y.Replace("\"", "").Replace("\\N", "")).ToArray();
-
-                void write<T>(IEnumerable<T> items, string file, string header, Func<T, string> mapRow)
+                catch (Exception ex)
                 {
-                    var path = importFolder + file;
-                    var count = 0;
-                    using (var fileWriter = new StreamWriter(path))
-                    {
-                        fileWriter.WriteLine(header);
-                        foreach (var item in items)
-                        {
-                            fileWriter.WriteLine(mapRow(item));
-                            count++;
-                        }
-                    }
-                    log($"File {path} of {count} items generated!");
+                    log(ex.Message);
                 }
-
-                logWriter = new StreamWriter(importFolder + fileLog, true);
-                Parallel.Invoke(
-                    () =>
-                    {
-                        airlineCache = sourceAirlines();
-                        write(airlineCache.Values, Airline.File, Airline.Header, Airline.MapRow);
-                    },
-                    () =>
-                    {
-                        airportCache = sourceAirports();
-                        write(airportCache.Values, Airport.File, Airport.Header, Airport.MapRow);
-                    },
-                    () =>
-                    {
-                        routeCache = sourceRoutes();
-                    }
-                );
-
-                var days = from d in Enumerable.Range(0, toDate.Subtract(fromDate).Days) select fromDate.AddDays(d);
-                flightsCache = sourceFlights(airlineCache, airportCache, routeCache);
-                Parallel.Invoke(
-                    () =>
-                    {
-                        write(flightsCache, FliesTo.File, FliesTo.Header, FliesTo.MapRow);
-                    },
-                    () =>
-                    {
-                        foreach (var day in days)
-                        {
-                            write(airportCache.Select(x => AirportDay.Create(x.Value, day)), AirportDay.File(day), AirportDay.Header, AirportDay.MapRow);
-                            write(flightsCache, Flight<string, string>.FileFlights(day), Flight<string, string>.Header, Flight<string, string>.MapRow(day));
-                        }
-                    },
-                    () =>
-                    {
-                        foreach (var day in days)
-                        {
-                            write(airportCache.Values, HasDay.File(day), HasDay.Header, HasDay.MapRow(day));
-                            write(flightsCache, InFlight.File(day), InFlight.Header, InFlight.MapRow(day));
-                            write(flightsCache, OutFlight.File(day), OutFlight.Header, OutFlight.MapRow(day));
-                        }
-                    }
-                );
-
-                log($"Flights import generated!");
-                logWriter.Close();
-            }
-            catch (Exception ex)
-            {
-                log(ex.Message);
-            }
-            finally
-            {
-                Console.ReadKey();
+                finally
+                {
+                    Console.ReadKey();
+                }
             }
         }
     }
