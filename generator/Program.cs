@@ -19,7 +19,7 @@ namespace FlightsGenerator
     public class Airline : IEquatable<Airline>
     {
         public const string File = "airlines.csv";
-        public static string Header = "code_iata:ID,name:STRING,country:STRING";
+        public static string Header = "code:ID,name:STRING,country:STRING";
 
         private const string lco = "Lowcoster";
         private const string ord = "Ordinary";
@@ -59,7 +59,7 @@ namespace FlightsGenerator
     public class Airport
     {
         public static string File = "airports.csv";
-        public static string Header = "code_iata:ID,name:STRING,country:STRING,city:STRING,location:POINT,offset_hours_utc:FLOAT";
+        public static string Header = "code:ID,name:STRING,country:STRING,city:STRING,location:POINT,utc_offset:FLOAT";
 
         public string Name { get; private set; }
         public string Code { get; private set; }
@@ -91,14 +91,15 @@ namespace FlightsGenerator
         public static string FileRoutes = "routes.csv";
         public static string FileFlightsHeader() => string.Format($"flights_header.csv");
         public static string FileFlights(DateTime day) => string.Format($"flights_data_{day.ToString("yyyMMdd")}.csv");
-        public static string Header => "flightNumber:ID,departs:STRING,duration:STRING,distance_km:INT,price:INT";
+        public static string Header => "flightNumber:ID,departs:TIME,duration:STRING,distance:INT,price:INT";
 
-        private const double basePricePerKm = 10.0d;
+        private const double basePricePerKm = 2.0d;
 
         public TAirline Airline { get; private set; }
         public string FlightNumber => $"{Airline}_{From}_{To}";
         public double Price => Math.Round((Airline is Airline airline) ? airline.PriceX * Distance * basePricePerKm * (1d + (new Random().Next(0, 3) / 10d)) : 0d, 0);
-        public double Duration => Math.Round((Airline is Airline airline) ? Distance / (airline.PriceX * 1000) : 0d, 2);
+        public string Duration
+            => ConvertDuration(TimeSpan.FromHours(Math.Round((Airline is Airline airline) ? Distance / (airline.PriceX * 800) : 0d, 2)));
         public TAirport From { get; private set; }
         public TAirport To { get; private set; }
         public double Distance => (From is Airport from && To is Airport to) ? GetDistance(from, to) : 0d;
@@ -110,8 +111,16 @@ namespace FlightsGenerator
                 Airline = airline,
                 From = from,
                 To = to,
-                Departs = $"P{new Random().Next(0, 24)}H{new Random().Next(0, 59)}M"
+                Departs = $"{new Random().Next(0, 24).ToString("D2")}" +
+                            $"{new Random().Next(0, 59).ToString("D2")}" +
+                            $"00.000{(Offset(from is Airport f ? f : null))}"
             };
+
+        private static string ConvertDuration(TimeSpan timeSpan)
+            => $"P{timeSpan.Hours.ToString("D2")}H{timeSpan.Minutes.ToString("D2")}M";
+
+        private static string Offset(Airport airport)
+            => airport != null ? $"{(airport.OffsetUTC > 0 ? "+" : "-")}{Math.Abs(airport.OffsetUTC).ToString("D2")}00" : string.Empty;
 
         private static readonly ConcurrentDictionary<string, double> DistanceCache = new ConcurrentDictionary<string, double>();
 
@@ -137,12 +146,10 @@ namespace FlightsGenerator
             => string.Join(',', new[] { $"{f.FlightNumber}_{day.ToString("yyyMMdd")}", f.Departs, f.Duration.ToString(), f.Distance.ToString(), f.Price.ToString() });
 
         public bool Equals(Flight<TAirport, TAirline> other)
-            => (From is Airport from && To is Airport to && other.From is Airport otherFrom && other.To is Airport otherTo)
-                ? from.Code == otherFrom.Code && to.Code == otherTo.Code
-                : false;
+            => FlightNumber == other.FlightNumber;
 
         public override int GetHashCode()
-            => (From is Airport from && To is Airport to) ? (from.Code + to.Code).GetHashCode() : 0;
+            => FlightNumber.GetHashCode();
     }
 
     public class AirportDay
@@ -170,7 +177,7 @@ namespace FlightsGenerator
     public static class FliesTo
     {
         public static string File = "fliesTo.csv";
-        public static string Header => ":START_ID,distance_km:INT,:END_ID";
+        public static string Header => ":START_ID,distance:INT,:END_ID";
         public static string MapRow(Flight<Airport, Airline> f) => string.Join(',', new[] { f.From.Code, f.Distance.ToString(), f.To.Code });
     }
 
@@ -210,6 +217,7 @@ namespace FlightsGenerator
     {
         private const string dataFolder = "./data/";
         private const string importFolder = "./import/";
+        private const string moveFolder = "../../../../neo4j-flights/import/";
 
         private const string fileLog = "log.txt";
 
@@ -296,7 +304,7 @@ namespace FlightsGenerator
                                 result.Add(Flight<Airport, Airline>.Create(airline, from, to));
                             }
                         }
-                        return result.Distinct();
+                        return result;
                     }
 
                     T tryToMap<T>(string[] arr, Func<string[], T> map) where T : class
@@ -342,7 +350,7 @@ namespace FlightsGenerator
                     }
 
                     logWriter = new StreamWriter(importFolder + fileLog, true);
-                    log($"Flights import started");
+                    log($"Files generation started");
 
                     Parallel.Invoke(
                         () =>
@@ -366,7 +374,7 @@ namespace FlightsGenerator
                     Parallel.Invoke(
                         () =>
                         {
-                            write(flightsCache, FliesTo.File, FliesTo.Header, FliesTo.MapRow, Types.Relationship);
+                            write(flightsCache.Distinct(AirportEquals.Create()), FliesTo.File, FliesTo.Header, FliesTo.MapRow, Types.Relationship);
                         },
                         () =>
                         {
@@ -375,7 +383,7 @@ namespace FlightsGenerator
                             foreach (var day in days)
                             {
                                 write(airportCache.Select(x => AirportDay.Create(x.Value, day)), AirportDay.File(day), string.Empty, AirportDay.MapRow, Types.Node);
-                                write(flightsCache, Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node);
+                                write(flightsCache.Distinct(FlightEquals.Create()), Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node);
                             }
                         },
                         () =>
@@ -392,20 +400,55 @@ namespace FlightsGenerator
                         }
                     );
 
-                    log($"Total {countNodes} nodes generated");
-                    log($"Total {countRelationships} relationships generated");
-                    log($"Flights import finished");
+                    log($"Files generation finished");
+                    log($"Total {countNodes} node items generated");
+                    log($"Total {countRelationships} relationship items generated");
                     logWriter.Close();
+
+                    if (Directory.Exists(moveFolder))
+                    {
+                        Directory.Delete(moveFolder, true);
+                    }
+                    Directory.Move(importFolder, moveFolder);
+                    Console.WriteLine($"Folder {importFolder} moved to {moveFolder}");
                 }
                 catch (Exception ex)
                 {
-                    log(ex.Message);
+                    Console.WriteLine(ex.Message);
                 }
                 finally
                 {
+                    if (logWriter != null)
+                    {
+                        logWriter.Close();
+                    }
                     Console.ReadKey();
                 }
             }
+        }
+
+        public class AirportEquals : IEqualityComparer<Flight<Airport, Airline>>
+        {
+            public bool Equals(Flight<Airport, Airline> x, Flight<Airport, Airline> y)
+                => x.From.Code == y.From.Code && x.To.Code == y.To.Code;
+
+            public int GetHashCode(Flight<Airport, Airline> obj)
+                => (obj.From.Code + obj.To.Code).GetHashCode();
+
+            public static AirportEquals Create()
+                => new AirportEquals();
+        }
+
+        public class FlightEquals : IEqualityComparer<Flight<Airport, Airline>>
+        {
+            public bool Equals(Flight<Airport, Airline> x, Flight<Airport, Airline> y)
+                => x.FlightNumber == y.FlightNumber && x.FlightNumber == y.FlightNumber;
+
+            public int GetHashCode(Flight<Airport, Airline> obj)
+                => obj.FlightNumber.GetHashCode();
+
+            public static FlightEquals Create()
+                => new FlightEquals();
         }
     }
 }
