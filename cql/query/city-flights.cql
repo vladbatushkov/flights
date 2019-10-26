@@ -69,3 +69,19 @@ LIMIT 10
 //Started streaming 10 records after 118325 ms and completed after 118329 ms.
 //INDEX
 //Started streaming 10 records after 21201 ms and completed after 21211 ms.
+
+PROFILE MATCH p = ((a1:Airport { city: "Bangkok" })-[:FLIES_TO*1..2]->(a2:Airport { city: "Paris" }))
+WITH { stops: apoc.coll.pairsMin(nodes(p)), distance: apoc.coll.sum([x IN relationships(p) | x.distance ]) } as root
+WITH root, min(root.distance) as min
+WHERE root.distance <= min * 1.5 AND SIZE(apoc.coll.duplicates(root.stops)) = 0
+UNWIND root.stops as stop
+MATCH (a:Airport)-[:HAS_DAY]->(ad:AirportDay)-[:IN_FLIGHT]->(f:Flight)-[:OUT_FLIGHT]->(bd:AirportDay)<-[:HAS_DAY]-(b:Airport)
+WHERE a.code = stop[0].code
+AND b.code = stop[1].code
+AND ad.code = stop[0].code + "_20191101"
+AND bd.code = stop[1].code + "_20191101"
+WITH root, stop, collect(distinct f) as flights
+WITH root.stops as stops, { stops: SIZE(root.stops), distance: root.distance, route: collect({ stop: stop, flights: flights }) } as result
+RETURN result
+ORDER BY result.stops ASC, result.distance ASC
+LIMIT 10
