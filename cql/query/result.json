@@ -1,0 +1,312 @@
+{
+    "distance": 12281.0,
+    "stops": [
+      {
+        "stop": [
+          {
+            "utc_offset": 7.0,
+            "name": "Don Mueang International Airport",
+            "country": "Thailand",
+            "location": point({srid:4326, x:100.607002258, y:13.9125995636}),
+            "code": "DMK",
+            "city": "Bangkok"
+          },
+          {
+            "utc_offset": 8.0,
+            "name": "Kuala Lumpur International Airport",
+            "country": "Malaysia",
+            "location": point({srid:4326, x:101.70999908447, y:2.745579957962}),
+            "code": "KUL",
+            "city": "Kuala Lumpur"
+          }
+        ],
+        "flights": [
+          {
+            "duration": "P01H49M",
+            "distance": 1249,
+            "price": 2148,
+            "flightNumber": "OD_DMK_KUL_20191101",
+            "departs": "19:25:00+07:00"
+          },
+          {
+            "duration": "P01H57M",
+            "distance": 1249,
+            "price": 2398,
+            "flightNumber": "FD_DMK_KUL_20191101",
+            "departs": "04:29:00+07:00"
+          },
+          {
+            "duration": "P01H45M",
+            "distance": 1249,
+            "price": 2668,
+            "flightNumber": "AK_DMK_KUL_20191101",
+            "departs": "01:23:00+07:00"
+          }
+        ]
+      },
+      {
+        "stop": [
+          {
+            "utc_offset": 8.0,
+            "name": "Kuala Lumpur International Airport",
+            "country": "Malaysia",
+            "location": point({srid:4326, x:101.70999908447, y:2.745579957962}),
+            "code": "KUL",
+            "city": "Kuala Lumpur"
+          },
+          {
+            "utc_offset": 8.0,
+            "name": "Singapore Changi Airport",
+            "country": "Singapore",
+            "location": point({srid:4326, x:103.994003, y:1.35019}),
+            "code": "SIN",
+            "city": "Singapore"
+          }
+        ],
+        "flights": [
+          {
+            "duration": "P00H22M",
+            "distance": 298,
+            "price": 694,
+            "flightNumber": "TR_KUL_SIN_20191101",
+            "departs": "15:55:00+08:00"
+          },
+          {
+            "duration": "P00H23M",
+            "distance": 298,
+            "price": 572,
+            "flightNumber": "SQ_KUL_SIN_20191101",
+            "departs": "20:30:00+08:00"
+          },
+          {
+            "duration": "P00H26M",
+            "distance": 298,
+            "price": 557,
+            "flightNumber": "MK_KUL_SIN_20191101",
+            "departs": "14:29:00+08:00"
+          },
+          {
+            "duration": "P00H27M",
+            "distance": 298,
+            "price": 586,
+            "flightNumber": "MI_KUL_SIN_20191101",
+            "departs": "02:28:00+08:00"
+          },
+          {
+            "duration": "P00H25M",
+            "distance": 298,
+            "price": 622,
+            "flightNumber": "MH_KUL_SIN_20191101",
+            "departs": "04:07:00+08:00"
+          },
+          {
+            "duration": "P00H24M",
+            "distance": 298,
+            "price": 672,
+            "flightNumber": "HY_KUL_SIN_20191101",
+            "departs": "21:34:00+08:00"
+          },
+          {
+            "duration": "P00H25M",
+            "distance": 298,
+            "price": 637,
+            "flightNumber": "AK_KUL_SIN_20191101",
+            "departs": "07:46:00+08:00"
+          },
+          {
+            "duration": "P00H24M",
+            "distance": 298,
+            "price": 672,
+            "flightNumber": "AI_KUL_SIN_20191101",
+            "departs": "04:48:00+08:00"
+          },
+          {
+            "duration": "P00H24M",
+            "distance": 298,
+            "price": 603,
+            "flightNumber": "AA_KUL_SIN_20191101",
+            "departs": "07:29:00+08:00"
+          },
+          {
+            "duration": "P00H27M",
+            "distance": 298,
+            "price": 538,
+            "flightNumber": "3K_KUL_SIN_20191101",
+            "departs": "07:58:00+08:00"
+          }
+        ]
+      },
+      {
+        "stop": [
+          {
+            "utc_offset": 8.0,
+            "name": "Singapore Changi Airport",
+            "country": "Singapore",
+            "location": point({srid:4326, x:103.994003, y:1.35019}),
+            "code": "SIN",
+            "city": "Singapore"
+          },
+          {
+            "utc_offset": 1.0,
+            "name": "Charles de Gaulle International Airport",
+            "country": "France",
+            "location": point({srid:4326, x:2.55, y:49.012798}),
+            "code": "CDG",
+            "city": "Paris"
+          }
+        ],
+        "flights": [
+          {
+            "duration": "P13H58M",
+            "distance": 10734,
+            "price": 24731,
+            "flightNumber": "SQ_SIN_CDG_20191101",
+            "departs": "20:19:00+08:00"
+          },
+          {
+            "duration": "P16H10M",
+            "distance": 10734,
+            "price": 21382,
+            "flightNumber": "AF_SIN_CDG_20191101",
+            "departs": "02:23:00+08:00"
+          }
+        ]
+      },
+      {
+        "stop": [
+          {
+            "utc_offset": 7.0,
+            "name": "Suvarnabhumi Airport",
+            "country": "Thailand",
+            "location": point({srid:4326, x:100.747001647949, y:13.6810998916626}),
+            "code": "BKK",
+            "city": "Bangkok"
+          },
+          {
+            "utc_offset": 8.0,
+            "name": "Xiamen Gaoqi International Airport",
+            "country": "China",
+            "location": point({srid:4326, x:118.127998352051, y:24.5440006256104}),
+            "code": "XMN",
+            "city": "Xiamen"
+          }
+        ],
+        "flights": [
+          {
+            "duration": "P03H13M",
+            "distance": 2188,
+            "price": 4464,
+            "flightNumber": "TG_BKK_XMN_20191101",
+            "departs": "23:11:00+07:00"
+          },
+          {
+            "duration": "P03H06M",
+            "distance": 2188,
+            "price": 3851,
+            "flightNumber": "MF_BKK_XMN_20191101",
+            "departs": "18:14:00+07:00"
+          },
+          {
+            "duration": "P03H25M",
+            "distance": 2188,
+            "price": 3851,
+            "flightNumber": "CZ_BKK_XMN_20191101",
+            "departs": "09:12:00+07:00"
+          }
+        ]
+      },
+      {
+        "stop": [
+          {
+            "utc_offset": 8.0,
+            "name": "Xiamen Gaoqi International Airport",
+            "country": "China",
+            "location": point({srid:4326, x:118.127998352051, y:24.5440006256104}),
+            "code": "XMN",
+            "city": "Xiamen"
+          },
+          {
+            "utc_offset": 8.0,
+            "name": "Shanghai Pudong International Airport",
+            "country": "China",
+            "location": point({srid:4326, x:121.805000305176, y:31.1434001922607}),
+            "code": "PVG",
+            "city": "Shanghai"
+          }
+        ],
+        "flights": [
+          {
+            "duration": "P01H07M",
+            "distance": 819,
+            "price": 1640,
+            "flightNumber": "MU_XMN_PVG_20191101",
+            "departs": "21:20:00+08:00"
+          },
+          {
+            "duration": "P01H08M",
+            "distance": 819,
+            "price": 1622,
+            "flightNumber": "HO_XMN_PVG_20191101",
+            "departs": "11:24:00+08:00"
+          },
+          {
+            "duration": "P01H15M",
+            "distance": 819,
+            "price": 1592,
+            "flightNumber": "FM_XMN_PVG_20191101",
+            "departs": "17:13:00+08:00"
+          },
+          {
+            "duration": "P01H04M",
+            "distance": 819,
+            "price": 1730,
+            "flightNumber": "9C_XMN_PVG_20191101",
+            "departs": "15:29:00+08:00"
+          }
+        ]
+      },
+      {
+        "stop": [
+          {
+            "utc_offset": 8.0,
+            "name": "Shanghai Pudong International Airport",
+            "country": "China",
+            "location": point({srid:4326, x:121.805000305176, y:31.1434001922607}),
+            "code": "PVG",
+            "city": "Shanghai"
+          },
+          {
+            "utc_offset": 1.0,
+            "name": "Charles de Gaulle International Airport",
+            "country": "France",
+            "location": point({srid:4326, x:2.55, y:49.012798}),
+            "code": "CDG",
+            "city": "Paris"
+          }
+        ],
+        "flights": [
+          {
+            "duration": "P12H44M",
+            "distance": 9274,
+            "price": 16879,
+            "flightNumber": "MU_PVG_CDG_20191101",
+            "departs": "00:34:00+08:00"
+          },
+          {
+            "duration": "P12H52M",
+            "distance": 9274,
+            "price": 18363,
+            "flightNumber": "CA_PVG_CDG_20191101",
+            "departs": "13:52:00+08:00"
+          },
+          {
+            "duration": "P13H58M",
+            "distance": 9274,
+            "price": 16934,
+            "flightNumber": "AF_PVG_CDG_20191101",
+            "departs": "14:08:00+08:00"
+          }
+        ]
+      }
+    ]
+  }
