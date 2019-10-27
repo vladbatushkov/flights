@@ -238,7 +238,7 @@ namespace FlightsGenerator
         public class Runner
         {
             private readonly DateTime fromDate = DateTime.Parse("2019-11-01");
-            private readonly DateTime toDate = DateTime.Parse("2019-11-03");
+            private readonly DateTime toDate = DateTime.Parse("2019-12-01");
 
             private StreamWriter logWriter;
 

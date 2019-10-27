@@ -121,7 +121,7 @@ PROFILE WITH { max_distance: 2800, date: "20191101", codeFrom: "SVO", codeTo: "C
 CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + params.codeFrom + "_" + params.date  + "\" })-[:" + params.codeFrom + "_FLIGHT" +"]->(f:Flight)-[:" + params.codeFrom + "_FLIGHT" +"]->(bd:AirportDay { code: \"" + params.codeTo + "_" + params.date  + "\" }) RETURN f", {}) yield value
 RETURN value
 
-PROFILE WITH { max_distance: 2800, a: "Paris", b: "Moscow" } as params
+PROFILE WITH { max_distance: 7000, a: "Bangkok", b: "Moscow" } as params
 MATCH p = ((a:Airport { city: params.a })-[:FLIES_TO*1..2]->(:Airport { city: params.b }))
 WHERE apoc.coll.sum([x IN relationships(p) | x.distance ]) <= params.max_distance * 1.25 AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
 WITH nodes(p) as stops
