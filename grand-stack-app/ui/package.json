@@ -1,0 +1,46 @@
+{
+  "name": "grand-stack-starter-ui",
+  "version": "0.0.1",
+  "description": "UI app for GRANDstack",
+  "dependencies": {
+    "@material-ui/core": "^3.6.0",
+    "@material-ui/icons": "^3.0.1",
+    "apollo-boost": "^0.1.22",
+    "graphql": "^14.0.2",
+    "graphql-tag": "^2.10.0",
+    "prettier": "^1.15.2",
+    "react": "^16.6.3",
+    "react-apollo": "^2.3.2",
+    "react-dom": "^16.6.3",
+    "react-scripts": "^2.1.1",
+    "serve": "^10.1.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "now-start": "serve build/"
+  },
+  "devDependencies": {
+    "husky": "^1.2.0",
+    "lint-staged": "^8.1.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,css,md,graphql}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

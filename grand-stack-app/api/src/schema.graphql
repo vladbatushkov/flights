@@ -1,0 +1,19 @@
+type Airline {
+  code: String!
+  name: String!
+  country: String!
+}
+
+type Airport {
+  code: String!
+  name: String!
+  country: String!
+  city: String!
+}
+
+type Query {
+  AirportsInCity(city: String): [Airport]
+    @cypher(
+      statement: "MATCH (a:Airport) WHERE a.city = $city RETURN a"
+    )
+}

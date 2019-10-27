@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  # neo4j:
+  #   build: ./neo4j
+  #   ports:
+  #     - 7474:7474
+  #     - 7473:7473
+  #     - 7687:7687
+
+  api:
+    build: ./api
+    ports:
+      - 4000:4000
+    # links:
+    # - neo4j
+    # depends_on:
+    # - neo4j
+
+  ui:
+    build: ./ui
+    ports:
+      - 3000:3000
+    links:
+    - api
+    depends_on:
+    - api
