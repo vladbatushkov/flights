@@ -198,7 +198,7 @@ namespace FlightsGenerator
         public static string Header => ":START_ID,:END_ID,:TYPE";
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> a)
-            => string.Join(',', new[] { AirportDay.Create(a.From, day).Code, $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", $"IN_FLIGHT" });
+            => string.Join(',', new[] { AirportDay.Create(a.From, day).Code, $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", $"{a.From.Code}_FLIGHT" });
     }
 
     public class OutFlight
@@ -208,7 +208,7 @@ namespace FlightsGenerator
         public static string Header => ":START_ID,:END_ID,:TYPE";
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> a)
-            => string.Join(',', new[] { $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", AirportDay.Create(a.To, day).Code, $"OUT_FLIGHT" });
+            => string.Join(',', new[] { $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", AirportDay.Create(a.To, day).Code, $"{a.From.Code}_FLIGHT" });
     }
 
     #endregion
