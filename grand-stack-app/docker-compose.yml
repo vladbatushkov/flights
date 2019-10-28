@@ -6,13 +6,17 @@ services:
   #   build: ./neo4j
   #   ports:
   #     - 7474:7474
-  #     - 7473:7473
   #     - 7687:7687
+  #   environment:
+  #     - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+  #     - NEO4J_apoc_import_file_enabled=true
+  #     - NEO4J_apoc_export_file_enabled=true
+  #     - NEO4J_dbms_shell_enabled=true
 
   api:
     build: ./api
     ports:
-      - 4000:4000
+      - 4001:4001
     # links:
     # - neo4j
     # depends_on:
