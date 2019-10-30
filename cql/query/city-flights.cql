@@ -104,8 +104,8 @@ WITH root, collect({ stop: stop, flights: flights }) as route
 LIMIT 100
 
 //cypher
-PROFILE WITH 7000 * 1.25 as AVG_DISTANCE
-MATCH p = ((a:Airport { city: "Bangkok" })-[:FLIES_TO*1..3]->(:Airport { city: "Stockholm" }))
+WITH 7000 * 1.25 as AVG_DISTANCE
+MATCH p = ((a:Airport { city: "Bangkok" })-[:FLIES_TO*1..3]->(:Airport { city: "Moscow" }))
 WHERE apoc.coll.sum([x IN relationships(p) | x.distance ]) <= AVG_DISTANCE AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
 WITH nodes(p) as stops
 UNWIND apoc.coll.pairsMin(stops) as stop
@@ -121,9 +121,12 @@ PROFILE WITH { max_distance: 2800, date: "20191101", codeFrom: "SVO", codeTo: "C
 CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + params.codeFrom + "_" + params.date  + "\" })-[:" + params.codeFrom + "_FLIGHT" +"]->(f:Flight)-[:" + params.codeFrom + "_FLIGHT" +"]->(bd:AirportDay { code: \"" + params.codeTo + "_" + params.date  + "\" }) RETURN f", {}) yield value
 RETURN value
 
-PROFILE WITH { max_distance: 7000, a: "Bangkok", b: "Moscow" } as params
-MATCH p = ((a:Airport { city: params.a })-[:FLIES_TO*1..2]->(:Airport { city: params.b }))
-WHERE apoc.coll.sum([x IN relationships(p) | x.distance ]) <= params.max_distance * 1.25 AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
+PROFILE WITH { a: "Bangkok", b: "Moscow" } as params
+MATCH (a:Airport { city: params.a }), (b:Airport { city: params.b })
+WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
+  point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 as max_distance, params
+MATCH p = ((:Airport { city: params.a })-[:FLIES_TO*1..2]->(:Airport { city: params.b }))
+WHERE apoc.coll.sum([x IN relationships(p) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
 WITH nodes(p) as stops
 UNWIND apoc.coll.pairsMin(stops) as stop
 CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + stop[0].code + "_20191101\" })-[:" + stop[0].code + "_FLIGHT]->(f:Flight)-[:" + stop[0].code + "_FLIGHT]->(bd:AirportDay { code: \"" + stop[1].code + "_20191101\" }) RETURN f", {}) yield value
