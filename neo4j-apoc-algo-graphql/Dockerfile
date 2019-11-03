@@ -18,4 +18,6 @@ RUN wget $APOC_URI && mv apoc-${APOC_VERSION}-all.jar plugins/apoc-${APOC_VERSIO
 RUN wget $GRAPH_ALGORITHMS_URI && mv graph-algorithms-algo-${ALGO_VERSION}.jar plugins/graph-algorithms-algo-${ALGO_VERSION}.jar
 RUN wget $GRAPHQL_URI && mv neo4j-graphql-${GRAPHQL_VERSION}.jar plugins/neo4j-graphql-${GRAPHQL_VERSION}.jar
 
+EXPOSE 7474 7473 7687
+
 CMD [ "neo4j" ]

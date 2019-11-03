@@ -8,4 +8,6 @@ COPY import/*.csv import/
 
 ENV EXTENSION_SCRIPT=import.sh
 
+EXPOSE 7474 7473 7687
+
 CMD [ "neo4j" ]

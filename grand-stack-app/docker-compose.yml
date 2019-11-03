@@ -2,11 +2,11 @@ version: '3'
 
 services:
 
-  # neo4j:
-  #   build: ./neo4j
-  #   ports:
-  #     - 7474:7474
-  #     - 7687:7687
+  neo4j:
+    image: vladbatushkov/neo4j-flights:latest
+    ports:
+      - 7474:7474
+      - 7687:7687
   #   environment:
   #     - NEO4J_dbms_security_procedures_unrestricted=apoc.*
   #     - NEO4J_apoc_import_file_enabled=true
@@ -17,10 +17,10 @@ services:
     build: ./api
     ports:
       - 4001:4001
-    # links:
-    # - neo4j
-    # depends_on:
-    # - neo4j
+    links:
+    - neo4j
+    depends_on:
+    - neo4j
 
   ui:
     build: ./ui
