@@ -211,6 +211,16 @@ namespace FlightsGenerator
             => string.Join(',', new[] { $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", AirportDay.Create(a.To, day).Code, $"{a.From.Code}_FLIGHT" });
     }
 
+    public static class OperatedBy
+    {
+        public static string FileHeader() => string.Format($"operatedBy_header.csv");
+        public static string File(DateTime day) => string.Format($"operatedBy_data_{day.ToString("yyyyMMdd")}.csv");
+        public static string Header => ":START_ID,:END_ID";
+        public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
+            => (Flight<Airport, Airline> f)
+            => string.Join(',', new[] { $"{f.FlightNumber}_{day.ToString("yyyyMMdd")}", f.Airline.Code });
+    }
+
     #endregion
 
     public class Program
@@ -391,11 +401,13 @@ namespace FlightsGenerator
                             write(new object[] { }, HasDay.FileHeader(), HasDay.Header, (x) => string.Empty);
                             write(new object[] { }, InFlight.FileHeader(), InFlight.Header, (x) => string.Empty);
                             write(new object[] { }, OutFlight.FileHeader(), OutFlight.Header, (x) => string.Empty);
+                            write(new object[] { }, OperatedBy.FileHeader(), OperatedBy.Header, (x) => string.Empty);
                             foreach (var day in days)
                             {
                                 write(airportCache.Values, HasDay.File(day), string.Empty, HasDay.MapRow(day), Types.Relationship);
                                 write(flightsCache, InFlight.File(day), string.Empty, InFlight.MapRow(day), Types.Relationship);
                                 write(flightsCache, OutFlight.File(day), string.Empty, OutFlight.MapRow(day), Types.Relationship);
+                                write(flightsCache, OperatedBy.File(day), string.Empty, OperatedBy.MapRow(day), Types.Relationship);
                             }
                         }
                     );

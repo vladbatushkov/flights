@@ -11,7 +11,8 @@ import {
   Typography,
   TextField,
   Button,
-  Box
+  Card,
+  CardContent
 } from "@material-ui/core";
 
 const styles = theme => ({
@@ -38,7 +39,13 @@ const styles = theme => ({
     marginRight: theme.spacing.unit,
     marginTop: theme.spacing.unit * 2,
     minWidth: 200
-  }
+  },
+  routeCell: {
+    minWidth: "250px"
+  },
+  card: {
+    marginBottom: theme.spacing.unit * 2,
+  },
 });
 
 class FlightsSearch extends React.Component {
@@ -110,9 +117,9 @@ class FlightsSearch extends React.Component {
             WHERE a.city = "` + this.state.filter.from + `" AND b.city = "` + this.state.filter.to + `" AND apoc.coll.sum([x IN relationships(p) | x.distance ]) <= max_distance AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
             WITH nodes(p) as stops
             UNWIND apoc.coll.pairsMin(stops) as stop
-            CALL apoc.cypher.run('MATCH (ad:AirportDay { code: $' + 'adcode })-[:' + stop[0].code + '_FLIGHT]->(f:Flight)-[:' + stop[0].code + '_FLIGHT]->(bd:AirportDay { code: $' + 'bdcode }) RETURN f',
+            CALL apoc.cypher.run('MATCH (ad:AirportDay { code: $' + 'adcode })-[:' + stop[0].code + '_FLIGHT]->(f:Flight)-[:' + stop[0].code + '_FLIGHT]->(bd:AirportDay { code: $' + 'bdcode }) MATCH (f)-[:OPERATED_BY]->(a:Airline) RETURN f as flight, a as company',
             { adcode: stop[0].code + '_' + "` + this.state.filter.date + `", bdcode: stop[1].code + '_' + "` + this.state.filter.date + `" }) yield value
-            WITH stops, stop, collect(distinct value.f) as flights
+            WITH stops, stop, collect(distinct value) as flights
             RETURN stops as route, { stopsCount: SIZE(stops) - 1, stops: collect({ stop: stop, flights: flights }) } as routeDetails
             ORDER BY routeDetails.stopsCount ASC`
         }]
@@ -140,19 +147,97 @@ class FlightsSearch extends React.Component {
     console.log(data);
     return data;
   }
+  
+  cartesian = (result, data, idx) => {    
+    if (data.length === 1){
+      var temp = [];
+      for(var j = 0; j < data[0].length; j++) {
+        temp[j] = [];
+        temp[j].push(data[0][j]);
+      }
+      return [...temp];
+    }
 
-  cartesian(arr) {
-    return arr;
+    if (idx === data.length) {      
+      return result;
+    }
+    
+    result = this.merge(result, data[idx]);
+    var res = this.cartesian(result, data, idx + 1);
+    console.log(`result cartesian:`+ JSON.stringify(res));
+    return res;
+  }
+
+  merge = (arr1, arr2) => {
+    if (arr1.length === 0) {
+      return arr2;
+    }
+    var result = [];
+    for(var i = 0; i < arr1.length; i++) {
+      result[i] = [];
+      for(var j = 0; j < arr2.length; j++) {
+        result[i][j] = [arr1[i]];
+        result[i][j].push(arr2[j]);
+        result[i][j] = result[i][j].flat();
+      }
+    }
+    console.log('result merge:' + JSON.stringify(result));
+    return result.flat();
   }
 
   render() {
     const { classes } = this.props;    
-    const { error, isLoaded, items } = this.state;
+    const { error, isLoaded } = this.state;
+
+
+    let body = null;
+    
     if (error) {
-      return <div>Error: {error.message}</div>;
+      body = (<div>Error: {error.message}</div>);
     } else if (!isLoaded) {
-      return <div>Loading...</div>;
+      body = (<div>Loading...</div>);
     } else {
+      body = (<Table className={this.props.classes.table}>
+      <TableHead>
+        <TableRow>
+          <TableCell>
+            <TableSortLabel>
+              Stops
+            </TableSortLabel>
+          </TableCell>
+          <TableCell className={this.props.classes.routeCell}>
+            <TableSortLabel>
+              Route
+            </TableSortLabel>
+          </TableCell>
+          <TableCell>
+            <TableSortLabel>
+              Details
+            </TableSortLabel>
+          </TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {this.state.items.map(n => {
+          return (
+            <TableRow>
+            <TableCell>
+              {n.routeDetails.stopsCount}
+            </TableCell>
+              <TableCell component="th" scope="row">
+                {n.route.map(x => (`${x.city}(${x.code})`)).join(" -> ")}
+              </TableCell>
+              <TableCell>
+                  {this.cartesian([], n.routeDetails.stops.map(x => x.flights), 0).map(y => 
+                    <Card className={classes.card}><CardContent>{y.map(z => <p>{z.flight.flightNumber} by {z.company.name}: ${z.flight.price} THB</p>)}</CardContent></Card>
+                  )}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>);
+    }
       return (
         <Paper className={classes.root}>
           <Typography variant="h2" gutterBottom className={classes.margined}>
@@ -210,55 +295,9 @@ class FlightsSearch extends React.Component {
             Search
           </Button>
           </div>
-          <Table className={this.props.classes.table}>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <TableSortLabel>
-                    Number of Stops
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel>
-                    Route
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel>
-                    Details
-                  </TableSortLabel>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {this.state.items.map(n => {
-                return (
-                  <TableRow>
-                  <TableCell>
-                    {n.routeDetails.stopsCount}
-                  </TableCell>
-                    <TableCell component="th" scope="row">
-                      {n.route.map(x => x.code).join(" -> ")}
-                    </TableCell>
-                    <TableCell>
-                      {this.cartesian(n.routeDetails.stops).map(x => {
-                        return (
-                          <Box>
-                            <Typography>
-                              {x.flights.map(y => `#${y.flightNumber} of ${y.price} THB`)}
-                            </Typography>
-                          </Box>
-                          )}
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          {body}
         </Paper>
       );
-          }
   }
 }
 

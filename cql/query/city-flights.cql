@@ -129,7 +129,7 @@ MATCH p = ((:Airport { city: params.a })-[:FLIES_TO*1..2]->(:Airport { city: par
 WHERE apoc.coll.sum([x IN relationships(p) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
 WITH nodes(p) as stops
 UNWIND apoc.coll.pairsMin(stops) as stop
-CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + stop[0].code + "_20191101\" })-[:" + stop[0].code + "_FLIGHT]->(f:Flight)-[:" + stop[0].code + "_FLIGHT]->(bd:AirportDay { code: \"" + stop[1].code + "_20191101\" }) RETURN f", {}) yield value
+CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + stop[0].code + "_20191101\" })-[:" + stop[0].code + "_FLIGHT]->(f:Flight)-[:" + stop[0].code + "_FLIGHT]->(bd:AirportDay { code: \"" + stop[1].code + "_20191101\" }) MATCH (f)-[:OPERATED_BY]->(a:Airline) RETURN f as flight, a as company", {}) yield value
 WITH stops, stop, collect(distinct value) as flights
 RETURN stops as route, { stopsCount: SIZE(stops) - 1, stops: collect({ stop: stop, flights: flights }) } as routeDetails
 ORDER BY routeDetails.stopsCount ASC
