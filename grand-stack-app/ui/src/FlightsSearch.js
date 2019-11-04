@@ -12,7 +12,8 @@ import {
   TextField,
   Button,
   Card,
-  CardContent
+  CardContent,
+  CardActions
 } from "@material-ui/core";
 
 const styles = theme => ({
@@ -32,12 +33,14 @@ const styles = theme => ({
   },
   margined: {
     marginLeft: theme.spacing.unit,
-    marginTop: theme.spacing.unit
+    marginTop: theme.spacing.unit * 2,
+    minWidth: 200,
+    minHeight: 55
   },
   button: {
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit,
-    marginTop: theme.spacing.unit * 2,
+    marginTop: theme.spacing.unit * 3,
     minWidth: 200
   },
   routeCell: {
@@ -117,8 +120,8 @@ class FlightsSearch extends React.Component {
             WHERE a.city = "` + this.state.filter.from + `" AND b.city = "` + this.state.filter.to + `" AND apoc.coll.sum([x IN relationships(p) | x.distance ]) <= max_distance AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
             WITH nodes(p) as stops
             UNWIND apoc.coll.pairsMin(stops) as stop
-            CALL apoc.cypher.run('MATCH (ad:AirportDay { code: $' + 'adcode })-[:' + stop[0].code + '_FLIGHT]->(f:Flight)-[:' + stop[0].code + '_FLIGHT]->(bd:AirportDay { code: $' + 'bdcode }) MATCH (f)-[:OPERATED_BY]->(a:Airline) RETURN f as flight, a as company',
-            { adcode: stop[0].code + '_' + "` + this.state.filter.date + `", bdcode: stop[1].code + '_' + "` + this.state.filter.date + `" }) yield value
+            CALL apoc.cypher.run('MATCH (ad:AirportDay { code: $' + 'adcode })-[:' + stop[0].code + '_FLIGHT]->(f:Flight)-[:' + stop[0].code + '_FLIGHT]->(bd:AirportDay { code: $' + 'bdcode }) MATCH (f)-[:OPERATED_BY]->(c:Airline) RETURN f as flight, a, b, c as company',
+            { a: stop[0], adcode: stop[0].code + '_' + "` + this.state.filter.date + `", b: stop[1], bdcode: stop[1].code + '_' + "` + this.state.filter.date + `" }) yield value
             WITH stops, stop, collect(distinct value) as flights
             RETURN stops as route, { stopsCount: SIZE(stops) - 1, stops: collect({ stop: stop, flights: flights }) } as routeDetails
             ORDER BY routeDetails.stopsCount ASC`
@@ -198,38 +201,25 @@ class FlightsSearch extends React.Component {
       body = (<div>Loading...</div>);
     } else {
       body = (<Table className={this.props.classes.table}>
-      <TableHead>
-        <TableRow>
-          <TableCell>
-            <TableSortLabel>
-              Stops
-            </TableSortLabel>
-          </TableCell>
-          <TableCell className={this.props.classes.routeCell}>
-            <TableSortLabel>
-              Route
-            </TableSortLabel>
-          </TableCell>
-          <TableCell>
-            <TableSortLabel>
-              Details
-            </TableSortLabel>
-          </TableCell>
-        </TableRow>
-      </TableHead>
       <TableBody>
         {this.state.items.map(n => {
+          const flights = this.cartesian([], n.routeDetails.stops.map(x => x.flights), 0);
           return (
             <TableRow>
-            <TableCell>
-              {n.routeDetails.stopsCount}
-            </TableCell>
-              <TableCell component="th" scope="row">
-                {n.route.map(x => (`${x.city}(${x.code})`)).join(" -> ")}
-              </TableCell>
               <TableCell>
-                  {this.cartesian([], n.routeDetails.stops.map(x => x.flights), 0).map(y => 
-                    <Card className={classes.card}><CardContent>{y.map(z => <p>{z.flight.flightNumber} by {z.company.name}: ${z.flight.price} THB</p>)}</CardContent></Card>
+                  {flights.map(y => {
+                      const total = y.map(z => z.flight.price).reduce((a, b) => a + b, 0);
+                      return (<Card className={classes.card}>
+                        <CardContent>
+                      {y.map(z => <p>Flight {z.flight.duration} from {z.a.name} ({z.a.code}, {z.a.city}) to {z.b.name} ({z.b.code}, {z.b.city}) by {z.company.name}: ${z.flight.price} THB</p>)}
+                        </CardContent>
+                        <CardActions>
+                          <Button size="small" color="primary">
+                            {total} THB
+                          </Button>
+                        </CardActions>
+                      </Card>);
+                    }
                   )}
               </TableCell>
             </TableRow>
