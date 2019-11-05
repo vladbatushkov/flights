@@ -1,0 +1,1 @@
+flightNumber:ID,departs:TIME,duration:STRING,distance:INT,price:INT
