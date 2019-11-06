@@ -6,7 +6,7 @@
 place to store cypher queries
  
 ### /data
-original .csv files from [openflights.org](openflights.org)
+original .csv files from [openflights.org](https://openflights.org/data.html)
 
 ### /generator
 dotnet core C# console application to generate .csv files of nodes and relationships to import to *flights.db*
