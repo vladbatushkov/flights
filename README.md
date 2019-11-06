@@ -1,4 +1,4 @@
-# Flights Search Engine: Experimental Neo4j GRANDstack Implementation
+# Flights Search Application GRANDstack Experimental Implementation
 
 ## Solution structure
 
