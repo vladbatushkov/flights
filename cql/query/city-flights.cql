@@ -133,3 +133,20 @@ CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + stop[0].code + "_201911
 WITH stops, stop, collect(distinct value) as flights
 RETURN stops as route, { stopsCount: SIZE(stops) - 1, stops: collect({ stop: stop, flights: flights }) } as routeDetails
 ORDER BY routeDetails.stopsCount ASC
+
+PROFILE WITH { a: "BKK", b: "Moscow", date: "20191101", atype: "airport", btype: "city" } as params
+MATCH (a:Airport), (b:Airport)
+WHERE ((params.atype = "city" AND a.city = params.a) OR (params.atype = "airport" AND a.code = params.a)) AND ((params.btype = "city" AND b.city = params.b) OR (params.btype = "airport" AND b.code = params.b))
+WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
+  point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 as max_distance, params
+MATCH path = ((a:Airport)-[:FLIES_TO*..3]->(b:Airport))
+WHERE ((params.atype = "city" AND a.city = params.a) OR (params.atype = "airport" AND a.code = params.a)) AND ((params.btype = "city" AND b.city = params.b) OR (params.btype = "airport" AND b.code = params.b)) AND apoc.coll.sum([x IN relationships(path) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates([ x IN nodes(path) | x.city ])) = 0
+WITH nodes(path) as stops, params
+UNWIND apoc.coll.pairsMin(stops) as stop
+CALL apoc.cypher.run("MATCH (ad:AirportDay { code: \"" + stop[0].code + "_" + params.date + "\" })-[:" + stop[0].code + "_FLIGHT]->(f:Flight)-[:" + stop[0].code + "_FLIGHT]->(bd:AirportDay { code: \"" + stop[1].code + "_" + params.date + "\" }) MATCH (f)-[:OPERATED_BY]->(a:Airline) RETURN f as flight, a as company, $stop as stop, ($stop[0].code + $stop[1].code) as key", { stop: stop }) yield value
+WITH stops, stop, collect(distinct value) as flights
+WITH stops, SIZE(stops) - 2 as stopsCount, collect({ stop: stop, flights: flights }) as route
+WITH apoc.coll.combinations(apoc.coll.flatten([ x IN route | x.flights]), stopsCount + 1, stopsCount + 1) as all_routes, stopsCount
+WITH [ x IN all_routes WHERE stopsCount = 0 OR (stopsCount = 1 AND x[0].key <> x[1].key) OR (stopsCount = 2 AND x[0].key <> x[1].key AND x[0].key <> x[2].key AND x[1].key <> x[2].key) | x ] as unique_routes, stopsCount
+RETURN *
+ORDER BY stopsCount ASC
