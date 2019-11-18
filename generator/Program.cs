@@ -227,7 +227,7 @@ namespace FlightsGenerator
     {
         private const string dataFolder = "./data/";
         private const string importFolder = "./import/";
-        private const string moveFolder = "../../../../neo4j-flights/import/";
+        private const string destFolderDefault = "../../../../neo4j-flights/import/";
 
         private const string fileLog = "log.txt";
 
@@ -241,21 +241,22 @@ namespace FlightsGenerator
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            var destFolder = args[0];
             var runner = new Runner();
-            runner.Run(args);
+            runner.Run(destFolder);
         }
 
         public class Runner
         {
-            private readonly DateTime fromDate = DateTime.Parse("2019-11-01");
-            private readonly DateTime toDate = DateTime.Parse("2019-12-01");
+            private readonly DateTime fromDate = DateTime.Parse("2020-01-01");
+            private readonly DateTime toDate = DateTime.Parse("2020-02-01");
 
             private StreamWriter logWriter;
 
             private volatile int countNodes;
             private volatile int countRelationships;
 
-            public void Run(string[] args)
+            public void Run(string destFolder)
             {
                 void log(string message)
                 {
@@ -417,12 +418,17 @@ namespace FlightsGenerator
                     log($"Total {countRelationships} relationship items generated");
                     logWriter.Close();
 
-                    if (Directory.Exists(moveFolder))
+                    destFolder = destFolder ?? destFolderDefault;
+                    if (Directory.Exists(destFolder))
                     {
-                        Directory.Delete(moveFolder, true);
+                        Directory.Delete(destFolder, true);
+                        Directory.Move(importFolder, destFolder);
+                        Console.WriteLine($"Folder {importFolder} moved to {destFolder}");
                     }
-                    Directory.Move(importFolder, moveFolder);
-                    Console.WriteLine($"Folder {importFolder} moved to {moveFolder}");
+                    else
+                    {
+                        Console.WriteLine($"Path {destFolder} not found");
+                    }
                 }
                 catch (Exception ex)
                 {
