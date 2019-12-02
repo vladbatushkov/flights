@@ -91,7 +91,7 @@ namespace FlightsGenerator
         public static string FileRoutes = "routes.csv";
         public static string FileFlightsHeader() => string.Format($"flights_header.csv");
         public static string FileFlights(DateTime day) => string.Format($"flights_data_{day.ToString("yyyMMdd")}.csv");
-        public static string Header => "flightNumber:ID,departs:TIME,duration:STRING,distance:INT,price:INT";
+        public static string Header => "flightNumber:ID,departs:DATETIME,duration:STRING,distance:INT,price:INT";
 
         private const double basePricePerKm = 2.0d;
 
@@ -103,17 +103,13 @@ namespace FlightsGenerator
         public TAirport From { get; private set; }
         public TAirport To { get; private set; }
         public double Distance => (From is Airport from && To is Airport to) ? GetDistance(from, to) : 0d;
-        public string Departs { get; private set; }
 
         public static Flight<TAirport, TAirline> Create(TAirline airline, TAirport from, TAirport to)
             => new Flight<TAirport, TAirline>
             {
                 Airline = airline,
                 From = from,
-                To = to,
-                Departs = $"{new Random().Next(0, 24).ToString("D2")}" +
-                            $"{new Random().Next(0, 59).ToString("D2")}" +
-                            $"00.000{(Offset(from is Airport f ? f : null))}"
+                To = to
             };
 
         private static string ConvertDuration(TimeSpan timeSpan)
@@ -143,7 +139,12 @@ namespace FlightsGenerator
 
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> f)
-            => string.Join(',', new[] { $"{f.FlightNumber}_{day.ToString("yyyMMdd")}", f.Departs, f.Duration.ToString(), f.Distance.ToString(), f.Price.ToString() });
+            => string.Join(',', new[] { $"{f.FlightNumber}_{day.ToString("yyyMMdd")}", Departure(f, day), f.Duration.ToString(), f.Distance.ToString(), f.Price.ToString() });
+
+        private static string Departure(Flight<Airport, Airline> from, DateTime day)
+            => $"{day.ToString("yyyy-MM-dd")}T{new Random().Next(0, 24).ToString("D2")}:" +
+                            $"{new Random().Next(0, 59).ToString("D2")}:" +
+                            $"00.000{Offset(from.From)}";
 
         public bool Equals(Flight<TAirport, TAirline> other)
             => FlightNumber == other.FlightNumber;
@@ -233,15 +234,12 @@ namespace FlightsGenerator
 
         /// <summary>
         /// Flights schedule generator
-        /// arg1 = date from, "yyyy-MM-dd"
-        /// arg2 = date to, "yyyy-MM-dd"
-        /// arg3 = country csv, "Thailand,Sweden,Russia"
         /// For all Airlines from this Country create Flights Schedule from every Airport to existed destinations on each day in range.
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            var destFolder = args[0];
+            var destFolder = destFolderDefault;
             var runner = new Runner();
             runner.Run(destFolder);
         }
@@ -360,6 +358,7 @@ namespace FlightsGenerator
                         }
                     }
 
+                    Directory.CreateDirectory(importFolder);
                     logWriter = new StreamWriter(importFolder + fileLog, true);
                     log($"Files generation started");
 
