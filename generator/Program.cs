@@ -113,7 +113,7 @@ namespace FlightsGenerator
             };
 
         private static string ConvertDuration(TimeSpan timeSpan)
-            => $"P{timeSpan.Hours.ToString("D2")}H{timeSpan.Minutes.ToString("D2")}M";
+            => $"PT{timeSpan.Hours.ToString("D2")}H{timeSpan.Minutes.ToString("D2")}M";
 
         private static string Offset(Airport airport)
             => airport != null ? $"{(airport.OffsetUTC > 0 ? "+" : "-")}{Math.Abs(airport.OffsetUTC).ToString("D2")}00" : string.Empty;
