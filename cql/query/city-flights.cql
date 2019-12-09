@@ -198,3 +198,27 @@ MATCH (f)-[:OPERATED_BY]->(a:Airline)
 WITH collect({ stops: 1, flights: apoc.coll.union(onestoper.flights, [{ flight: f, company: a }]), transfer: duration.between(datetime(onestoper.next - duration("PT1H")), datetime(f.departs)).minutes, route: onestoper.route }) as flights, directs
 UNWIND apoc.coll.union(directs, flights) as flight
 RETURN flight
+
+//city only
+PROFILE WITH { a: "Bangkok", b: "New York", date: "20200101" } as params
+MATCH (a:Airport), (b:Airport)
+WHERE a.city = params.a AND b.city = params.b
+WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
+  point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 as max_distance, params
+MATCH path = ((a:Airport)-[:FLIES_TO*..2]->(b:Airport))
+WHERE a.city = params.a AND b.city = params.b
+  AND apoc.coll.sum([x IN relationships(path) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates([ x IN nodes(path) | x.city ])) = 0
+WITH nodes(path) as route, params
+MATCH (ad:AirportDay { code: route[0].code + "_" + params.date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: route[1].code + "_" + params.date })
+WHERE type(r1) = route[0].code + "_FLIGHT" AND type(r2) = route[0].code + "_FLIGHT"
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ flights: [{ flight: f, company: a }], next: datetime(datetime(f.departs) + duration(f.duration) + duration("PT1H")), route: route }) as flights, params
+WITH filter(x IN flights WHERE size(x.route) = 2) as directs, filter(x IN flights WHERE size(x.route) = 3) as onestopers, params
+UNWIND onestopers as onestoper
+WITH onestoper, apoc.date.format(datetime({ year: onestoper.next.year, month: onestoper.next.month, day: onestoper.next.day }).epochSeconds, 's', 'yyyyMMdd') as date, params, [ x IN directs | { stops: 0, flights: x.flights, route: x.route }] as directs
+MATCH (ad:AirportDay { code: onestoper.route[1].code + "_" + date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: onestoper.route[2].code + "_" + date })
+WHERE type(r1) = onestoper.route[1].code + "_FLIGHT" AND type(r2) = onestoper.route[1].code + "_FLIGHT" AND datetime(f.departs) > onestoper.next
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ stops: 1, flights: apoc.coll.union(onestoper.flights, [{ flight: f, company: a }]), transfer: duration.between(datetime(onestoper.next - duration("PT1H")), datetime(f.departs)).minutes, route: onestoper.route }) as flights, directs
+UNWIND apoc.coll.union(directs, flights) as flight
+RETURN flight
