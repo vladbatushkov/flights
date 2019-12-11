@@ -189,13 +189,13 @@ MATCH (ad:AirportDay { code: route[0].code + "_" + params.date })-[r1]->(f:Fligh
 WHERE type(r1) = route[0].code + "_FLIGHT" AND type(r2) = route[0].code + "_FLIGHT"
 MATCH (f)-[:OPERATED_BY]->(a:Airline)
 WITH collect({ flights: [{ flight: f, company: a }], next: datetime(datetime(f.departs) + duration(f.duration) + duration("PT1H")), route: route }) as flights, params
-WITH filter(x IN flights WHERE size(x.route) = 2) as directs, filter(x IN flights WHERE size(x.route) = 3) as onestopers, params
-UNWIND onestopers as onestoper
-WITH onestoper, onestoper.next.year + CASE WHEN onestoper.next.month > 9 THEN "" ELSE "0" END + onestoper.next.month + CASE WHEN onestoper.next.day > 9 THEN "" ELSE "0" END + onestoper.next.day as date, params, [ x IN directs | { stops: 0, flights: x.flights, route: x.route }] as directs
-MATCH (ad:AirportDay { code: onestoper.route[1].code + "_" + date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: onestoper.route[2].code + "_" + date })
-WHERE type(r1) = onestoper.route[1].code + "_FLIGHT" AND type(r2) = onestoper.route[1].code + "_FLIGHT" AND datetime(f.departs) > onestoper.next
+WITH filter(x IN flights WHERE size(x.route) = 2) as directs, filter(x IN flights WHERE size(x.route) = 3) as singlestopers, params
+UNWIND singlestopers as singlestoper
+WITH singlestoper, singlestoper.next.year + CASE WHEN singlestoper.next.month > 9 THEN "" ELSE "0" END + singlestoper.next.month + CASE WHEN singlestoper.next.day > 9 THEN "" ELSE "0" END + singlestoper.next.day as date, params, [ x IN directs | { stops: 0, flights: x.flights, route: x.route }] as directs
+MATCH (ad:AirportDay { code: singlestoper.route[1].code + "_" + date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: singlestoper.route[2].code + "_" + date })
+WHERE type(r1) = singlestoper.route[1].code + "_FLIGHT" AND type(r2) = singlestoper.route[1].code + "_FLIGHT" AND datetime(f.departs) > singlestoper.next
 MATCH (f)-[:OPERATED_BY]->(a:Airline)
-WITH collect({ stops: 1, flights: apoc.coll.union(onestoper.flights, [{ flight: f, company: a }]), transfer: duration.between(datetime(onestoper.next - duration("PT1H")), datetime(f.departs)).minutes, route: onestoper.route }) as flights, directs
+WITH collect({ stops: 1, flights: apoc.coll.union(singlestoper.flights, [{ flight: f, company: a }]), transfer: duration.between(datetime(singlestoper.next - duration("PT1H")), datetime(f.departs)).minutes, route: singlestoper.route }) as flights, directs
 UNWIND apoc.coll.union(directs, flights) as flight
 RETURN flight
 
@@ -205,7 +205,7 @@ MATCH (a:Airport), (b:Airport)
 WHERE a.city = params.a AND b.city = params.b
 WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
   point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 as max_distance, params
-MATCH path = ((a:Airport)-[:FLIES_TO*..2]->(b:Airport))
+MATCH path = ((a:Airport)-[:FLIES_TO*..3]->(b:Airport))
 WHERE a.city = params.a AND b.city = params.b
   AND apoc.coll.sum([x IN relationships(path) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates([ x IN nodes(path) | x.city ])) = 0
 WITH nodes(path) as route, params
@@ -213,12 +213,71 @@ MATCH (ad:AirportDay { code: route[0].code + "_" + params.date })-[r1]->(f:Fligh
 WHERE type(r1) = route[0].code + "_FLIGHT" AND type(r2) = route[0].code + "_FLIGHT"
 MATCH (f)-[:OPERATED_BY]->(a:Airline)
 WITH collect({ flights: [{ flight: f, company: a }], next: datetime(datetime(f.departs) + duration(f.duration) + duration("PT1H")), route: route }) as flights, params
-WITH filter(x IN flights WHERE size(x.route) = 2) as directs, filter(x IN flights WHERE size(x.route) = 3) as onestopers, params
-UNWIND onestopers as onestoper
-WITH onestoper, apoc.date.format(datetime({ year: onestoper.next.year, month: onestoper.next.month, day: onestoper.next.day }).epochSeconds, 's', 'yyyyMMdd') as date, params, [ x IN directs | { stops: 0, flights: x.flights, route: x.route }] as directs
-MATCH (ad:AirportDay { code: onestoper.route[1].code + "_" + date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: onestoper.route[2].code + "_" + date })
-WHERE type(r1) = onestoper.route[1].code + "_FLIGHT" AND type(r2) = onestoper.route[1].code + "_FLIGHT" AND datetime(f.departs) > onestoper.next
+WITH filter(x IN flights WHERE size(x.route) = 2) as directs, filter(x IN flights WHERE size(x.route) = 3) as singlestopers, params
+UNWIND singlestopers as singlestoper
+WITH singlestoper, apoc.date.format(datetime({ year: singlestoper.next.year, month: singlestoper.next.month, day: singlestoper.next.day }).epochSeconds, 's', 'yyyyMMdd') as date, params, [ x IN directs | { stops: 0, flights: x.flights, route: x.route }] as directs
+MATCH (ad:AirportDay { code: singlestoper.route[1].code + "_" + date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: singlestoper.route[2].code + "_" + date })
+WHERE type(r1) = singlestoper.route[1].code + "_FLIGHT" AND type(r2) = singlestoper.route[1].code + "_FLIGHT" AND datetime(f.departs) > singlestoper.next
 MATCH (f)-[:OPERATED_BY]->(a:Airline)
-WITH collect({ stops: 1, flights: apoc.coll.union(onestoper.flights, [{ flight: f, company: a }]), transfer: duration.between(datetime(onestoper.next - duration("PT1H")), datetime(f.departs)).minutes, route: onestoper.route }) as flights, directs
+WITH collect({ stops: 1, flights: apoc.coll.union(singlestoper.flights, [{ flight: f, company: a }]), transfer: duration.between(datetime(singlestoper.next - duration("PT1H")), datetime(f.departs)).minutes, route: singlestoper.route }) as flights, directs
 UNWIND apoc.coll.union(directs, flights) as flight
 RETURN flight
+
+//hop0, hop1
+PROFILE WITH { a: "Bangkok", b: "New York", date: "20200101" } as params
+MATCH (a:Airport), (b:Airport)
+WHERE a.city = params.a AND b.city = params.b
+WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
+  point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 as max_distance, params
+MATCH path = ((a:Airport)-[:FLIES_TO*..3]->(b:Airport))
+WHERE a.city = params.a AND b.city = params.b
+  AND apoc.coll.sum([x IN relationships(path) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates([ x IN nodes(path) | x.city ])) = 0
+WITH nodes(path) as route, params
+MATCH (ad:AirportDay { code: route[0].code + "_" + params.date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: route[1].code + "_" + params.date })
+WHERE type(r1) = route[0].code + "_FLIGHT" AND type(r2) = route[0].code + "_FLIGHT"
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ flights: [{ flight: f, company: a }], next: datetime(f.departs) + duration(f.duration) + duration("PT1H"), route: route }) as flights, params
+WITH filter(x IN flights WHERE size(x.route) = 2) as listhop0, filter(x IN flights WHERE size(x.route) = 3) as listhop1, filter(x IN flights WHERE size(x.route) = 4) as listhop2, params
+UNWIND listhop1 as hop1
+MATCH (ad:AirportDay { code: hop1.route[1].code + "_" + apoc.date.format(datetime({ year: hop1.next.year, month: hop1.next.month, day: hop1.next.day }).epochSeconds, 's', 'yyyyMMdd') })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: hop1.route[2].code + "_" + apoc.date.format(datetime({ year: hop1.next.year, month: hop1.next.month, day: hop1.next.day }).epochSeconds, 's', 'yyyyMMdd') })
+WHERE type(r1) = hop1.route[1].code + "_FLIGHT" AND type(r2) = hop1.route[1].code + "_FLIGHT" AND datetime(f.departs) > hop1.next
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ stops: 1, flights: apoc.coll.union(hop1.flights, [{ flight: f, company: a }]), route: hop1.route, transfer: duration.between(datetime(hop1.next - duration("PT1H")), datetime(f.departs)).minutes }) as listhop1, [ x IN listhop0 | { stops: 0, flights: x.flights, route: x.route }] as listhop0
+UNWIND apoc.coll.union(listhop0, listhop1) as flight
+RETURN flight
+
+//hop0, hop1, hop2
+PROFILE WITH { a: "Bangkok", b: "New York", date: "20200101" } as params
+MATCH (a:Airport), (b:Airport)
+WHERE a.city = params.a AND b.city = params.b
+WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
+  point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 as max_distance, params
+MATCH path = ((a:Airport)-[:FLIES_TO*..3]->(b:Airport))
+WHERE a.city = params.a AND b.city = params.b
+  AND apoc.coll.sum([x IN relationships(path) | x.distance ]) <= max_distance * 1.25 AND SIZE(apoc.coll.duplicates([ x IN nodes(path) | x.city ])) = 0
+WITH nodes(path) as route, params
+MATCH (ad:AirportDay { code: route[0].code + "_" + params.date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: route[1].code + "_" + params.date })
+WHERE type(r1) = route[0].code + "_FLIGHT" AND type(r2) = route[0].code + "_FLIGHT"
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ flights: [{ flight: f, company: a }], next: datetime(f.departs) + duration(f.duration) + duration("PT1H"), route: route }) as flights, params
+WITH filter(x IN flights WHERE size(x.route) = 2) as listhop0, filter(x IN flights WHERE size(x.route) = 3) as listhop1, filter(x IN flights WHERE size(x.route) = 4) as listhop2, params
+UNWIND listhop1 as hop1
+MATCH (ad:AirportDay { code: hop1.route[1].code + "_" + apoc.date.format(datetime({ year: hop1.next.year, month: hop1.next.month, day: hop1.next.day }).epochSeconds, 's', 'yyyyMMdd') })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: hop1.route[2].code + "_" + apoc.date.format(datetime({ year: hop1.next.year, month: hop1.next.month, day: hop1.next.day }).epochSeconds, 's', 'yyyyMMdd') })
+WHERE type(r1) = hop1.route[1].code + "_FLIGHT" AND type(r2) = hop1.route[1].code + "_FLIGHT" AND datetime(f.departs) > hop1.next
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH listhop2, collect({ stops: 1, flights: apoc.coll.union(hop1.flights, [{ flight: f, company: a, transfer: duration.between(datetime(hop1.next - duration("PT1H")), datetime(f.departs)).minutes }]), route: hop1.route }) as listhop1, [ x IN listhop0 | { stops: 0, flights: x.flights, route: x.route }] as listhop0
+WITH listhop2, listhop1, listhop0
+UNWIND listhop2 as hop2
+MATCH (ad:AirportDay { code: hop2.route[1].code + "_" + apoc.date.format(datetime({ year: hop2.next.year, month: hop2.next.month, day: hop2.next.day }).epochSeconds, 's', 'yyyyMMdd') })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: hop2.route[2].code + "_" + apoc.date.format(datetime({ year: hop2.next.year, month: hop2.next.month, day: hop2.next.day }).epochSeconds, 's', 'yyyyMMdd') })
+WHERE type(r1) = hop2.route[1].code + "_FLIGHT" AND type(r2) = hop2.route[1].code + "_FLIGHT" AND datetime(f.departs) > hop2.next
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ flights: apoc.coll.union(hop2.flights, [{ flight: f, company: a, transfer: duration.between(datetime(hop2.next - duration("PT1H")), datetime(f.departs)).minutes }]), next: datetime(f.departs) + duration(f.duration) + duration("PT1H"), route: hop2.route }) as listhop2, listhop1, listhop0
+UNWIND listhop2 as hop2
+MATCH (ad:AirportDay { code: hop2.route[2].code + "_" + apoc.date.format(datetime({ year: hop2.next.year, month: hop2.next.month, day: hop2.next.day }).epochSeconds, 's', 'yyyyMMdd') })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: hop2.route[3].code + "_" + apoc.date.format(datetime({ year: hop2.next.year, month: hop2.next.month, day: hop2.next.day }).epochSeconds, 's', 'yyyyMMdd') })
+WHERE type(r1) = hop2.route[2].code + "_FLIGHT" AND type(r2) = hop2.route[2].code + "_FLIGHT" AND datetime(f.departs) > hop2.next
+MATCH (f)-[:OPERATED_BY]->(a:Airline)
+WITH collect({ stops: 2, flights: apoc.coll.union(hop2.flights, [{ flight: f, company: a, transfer: duration.between(datetime(hop2.next - duration("PT1H")), datetime(f.departs)).minutes }]), route: hop2.route }) as listhop2, listhop1, listhop0
+UNWIND apoc.coll.union(apoc.coll.union(listhop0, listhop1), listhop2) as flight
+RETURN flight.flights, flight.stops
+ORDER BY flight.stops
+LIMIT 100
