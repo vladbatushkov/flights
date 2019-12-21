@@ -91,15 +91,13 @@ namespace FlightsGenerator
         public static string FileRoutes = "routes.csv";
         public static string FileFlightsHeader() => string.Format($"flights_header.csv");
         public static string FileFlights(DateTime day) => string.Format($"flights_data_{day.ToString("yyyMMdd")}.csv");
-        public static string Header => "flightNumber:ID,departs:DATETIME,duration:STRING,distance:INT,price:INT";
+        public static string Header => "flight_number:ID,departs_local:DATETIME,departs_offset:STRING,duration:STRING,arrival_local:DATETIME,arrival_offset:STRING,distance:INT,price:INT";
 
         private const double basePricePerKm = 2.0d;
 
         public TAirline Airline { get; private set; }
         public string FlightNumber => $"{Airline}_{From}_{To}";
         public double Price => Math.Round((Airline is Airline airline) ? airline.PriceX * Distance * basePricePerKm * (1d + (new Random().Next(0, 3) / 10d)) : 0d, 0);
-        public string Duration
-            => ConvertDuration(TimeSpan.FromHours(Math.Round((Airline is Airline airline) ? Distance / (airline.PriceX * 800) : 0d, 2)));
         public TAirport From { get; private set; }
         public TAirport To { get; private set; }
         public double Distance => (From is Airport from && To is Airport to) ? GetDistance(from, to) : 0d;
@@ -139,12 +137,55 @@ namespace FlightsGenerator
 
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> f)
-            => string.Join(',', new[] { $"{f.FlightNumber}_{day.ToString("yyyMMdd")}", Departure(f, day), f.Duration.ToString(), f.Distance.ToString(), f.Price.ToString() });
+            => {
+                var duration = Duration(f.Airline, f.Distance);
+                var departure = Departure(f, day);
+                var arrival = Arrival(departure, duration, f.From, f.To);
+                return string.Join(',', new[] {
+                    $"{f.FlightNumber}_{day.ToString("yyyMMdd")}",
+                    departure.ToString("yyyyMMddTHH:mm:00"),
+                    Offset(f.From),
+                    ConvertDuration(duration),
+                    arrival.ToString("yyyyMMddTHH:mm:00"),
+                    Offset(f.To),
+                    f.Distance.ToString(),
+                    f.Price.ToString()
+                });
+            };
 
-        private static string Departure(Flight<Airport, Airline> from, DateTime day)
-            => $"{day.ToString("yyyy-MM-dd")}T{new Random().Next(0, 24).ToString("D2")}:" +
-                            $"{new Random().Next(0, 59).ToString("D2")}:" +
-                            $"00.000{Offset(from.From)}";
+        private static DateTime Departure(Flight<Airport, Airline> f, DateTime day)
+        {
+            var hour = new Random().Next(0, 24);
+            var minute = new Random().Next(0, 59);
+            return new DateTime(day.Year, day.Month, day.Day, hour, minute, 0);
+        }
+
+        private static DateTime Arrival(DateTime departure, TimeSpan duration, Airport from, Airport to)
+            => departure.AddHours(duration.Hours).AddMinutes(duration.Minutes).AddHours(Offset(from.OffsetUTC, to.OffsetUTC));
+
+        private static int Offset(int from, int to)
+        {
+            if (from >= 0 && to >= 0)
+            {
+                return to - from;
+            }
+            else if (from <= 0 && to <= 0)
+            {
+                return Math.Abs(from) - Math.Abs(to);
+            }
+            else if (from >= 0 && to <= 0)
+            {
+                return -1 * (Math.Abs(from) + Math.Abs(to));
+            }
+            else if (from <= 0 && to >= 0)
+            {
+                return Math.Abs(from) + Math.Abs(to);
+            }
+            return 0;
+        }
+
+        private static TimeSpan Duration(Airline airline, double distance)
+            => TimeSpan.FromHours(Math.Round(distance / (airline.PriceX * 800), 2));
 
         public bool Equals(Flight<TAirport, TAirline> other)
             => FlightNumber == other.FlightNumber;
@@ -247,7 +288,7 @@ namespace FlightsGenerator
         public class Runner
         {
             private readonly DateTime fromDate = DateTime.Parse("2020-01-01");
-            private readonly DateTime toDate = DateTime.Parse("2020-02-01");
+            private readonly DateTime toDate = DateTime.Parse("2020-01-02");
 
             private StreamWriter logWriter;
 
