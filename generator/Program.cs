@@ -100,6 +100,9 @@ namespace FlightsGenerator
         public double Price => Math.Round((Airline is Airline airline) ? airline.PriceX * Distance * basePricePerKm * (1d + (new Random().Next(0, 3) / 10d)) : 0d, 0);
         public TAirport From { get; private set; }
         public TAirport To { get; private set; }
+        public TimeSpan Duration { get; private set; }
+        public DateTime Departure { get; private set; }
+        public DateTime Arrival { get; private set; }
         public double Distance => (From is Airport from && To is Airport to) ? GetDistance(from, to) : 0d;
 
         public static Flight<TAirport, TAirline> Create(TAirline airline, TAirport from, TAirport to)
@@ -138,29 +141,29 @@ namespace FlightsGenerator
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> f)
             => {
-                var duration = Duration(f.Airline, f.Distance);
-                var departure = Departure(f, day);
-                var arrival = Arrival(departure, duration, f.From, f.To);
+                f.Duration = GetDuration(f.Airline, f.Distance);
+                f.Departure = GetDeparture(f, day);
+                f.Arrival = GetArrival(f.Departure, f.Duration, f.From, f.To);
                 return string.Join(',', new[] {
                     $"{f.FlightNumber}_{day.ToString("yyyMMdd")}",
-                    departure.ToString("yyyyMMddTHH:mm:00"),
+                    f.Departure.ToString("yyyyMMddTHH:mm:00"),
                     Offset(f.From),
-                    ConvertDuration(duration),
-                    arrival.ToString("yyyyMMddTHH:mm:00"),
+                    ConvertDuration(f.Duration),
+                    f.Arrival.ToString("yyyyMMddTHH:mm:00"),
                     Offset(f.To),
                     f.Distance.ToString(),
                     f.Price.ToString()
                 });
             };
 
-        private static DateTime Departure(Flight<Airport, Airline> f, DateTime day)
+        private static DateTime GetDeparture(Flight<Airport, Airline> f, DateTime day)
         {
             var hour = new Random().Next(0, 24);
             var minute = new Random().Next(0, 59);
             return new DateTime(day.Year, day.Month, day.Day, hour, minute, 0);
         }
 
-        private static DateTime Arrival(DateTime departure, TimeSpan duration, Airport from, Airport to)
+        private static DateTime GetArrival(DateTime departure, TimeSpan duration, Airport from, Airport to)
             => departure.AddHours(duration.Hours).AddMinutes(duration.Minutes).AddHours(Offset(from.OffsetUTC, to.OffsetUTC));
 
         private static int Offset(int from, int to)
@@ -184,7 +187,7 @@ namespace FlightsGenerator
             return 0;
         }
 
-        private static TimeSpan Duration(Airline airline, double distance)
+        private static TimeSpan GetDuration(Airline airline, double distance)
             => TimeSpan.FromHours(Math.Round(distance / (airline.PriceX * 800), 2));
 
         public bool Equals(Flight<TAirport, TAirline> other)
@@ -199,17 +202,19 @@ namespace FlightsGenerator
         public static string FileHeader() => string.Format($"airportDay_header.csv");
         public static string File(DateTime day) => string.Format($"airportDay_data_{day.ToString("yyyyMMdd")}.csv");
 
-        public static string Header = "code:ID";
+        public static string Header = "code:ID,date:DATE";
 
         public string Code { get; private set; }
+        public string Date { get; private set; }
 
         public static AirportDay Create(Airport airport, DateTime day)
             => new AirportDay
             {
-                Code = $"{airport.Code}_{day.ToString("yyyyMMdd")}"
+                Code = $"{airport.Code}_{day.ToString("yyyyMMdd")}",
+                Date = day.ToString("yyyyMMdd")
             };
 
-        public static string MapRow(AirportDay ad) => string.Join(',', new[] { ad.Code });
+        public static string MapRow(AirportDay ad) => string.Join(',', new[] { ad.Code, ad.Date });
     }
 
     #endregion
@@ -250,7 +255,7 @@ namespace FlightsGenerator
         public static string Header => ":START_ID,:END_ID,:TYPE";
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> a)
-            => string.Join(',', new[] { $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", AirportDay.Create(a.To, day).Code, $"{a.To.Code}_FLIGHT" });
+            => string.Join(',', new[] { $"{a.FlightNumber}_{day.ToString("yyyyMMdd")}", AirportDay.Create(a.To, a.Arrival).Code, $"{a.To.Code}_FLIGHT" });
     }
 
     public static class OperatedBy
@@ -429,23 +434,29 @@ namespace FlightsGenerator
                         },
                         () =>
                         {
-                            write(new object[] { }, AirportDay.FileHeader(), AirportDay.Header, (x) => string.Empty);
                             write(new object[] { }, Flight<string, string>.FileFlightsHeader(), Flight<string, string>.Header, (x) => string.Empty);
                             foreach (var day in days)
                             {
-                                write(airportCache.Select(x => AirportDay.Create(x.Value, day)), AirportDay.File(day), string.Empty, AirportDay.MapRow, Types.Node);
                                 write(flightsCache.Distinct(FlightEquals.Create()), Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node);
                             }
                         },
                         () =>
                         {
+                            write(new object[] { }, AirportDay.FileHeader(), AirportDay.Header, (x) => string.Empty);
                             write(new object[] { }, HasDay.FileHeader(), HasDay.Header, (x) => string.Empty);
+                            foreach (var day in Enumerable.Append(days, days.Last().AddDays(1)))
+                            {
+                                write(airportCache.Select(x => AirportDay.Create(x.Value, day)), AirportDay.File(day), string.Empty, AirportDay.MapRow, Types.Node);
+                                write(airportCache.Values, HasDay.File(day), string.Empty, HasDay.MapRow(day), Types.Relationship);
+                            }
+                        },
+                        () =>
+                        {
                             write(new object[] { }, InFlight.FileHeader(), InFlight.Header, (x) => string.Empty);
                             write(new object[] { }, OutFlight.FileHeader(), OutFlight.Header, (x) => string.Empty);
                             write(new object[] { }, OperatedBy.FileHeader(), OperatedBy.Header, (x) => string.Empty);
                             foreach (var day in days)
                             {
-                                write(airportCache.Values, HasDay.File(day), string.Empty, HasDay.MapRow(day), Types.Relationship);
                                 write(flightsCache, InFlight.File(day), string.Empty, InFlight.MapRow(day), Types.Relationship);
                                 write(flightsCache, OutFlight.File(day), string.Empty, OutFlight.MapRow(day), Types.Relationship);
                                 write(flightsCache, OperatedBy.File(day), string.Empty, OperatedBy.MapRow(day), Types.Relationship);

@@ -1,1 +1,1 @@
-flightNumber:ID,departs:DATETIME,duration:STRING,distance:INT,price:INT
+flight_number:ID,departs_local:DATETIME,departs_offset:STRING,duration:STRING,arrival_local:DATETIME,arrival_offset:STRING,distance:INT,price:INT
