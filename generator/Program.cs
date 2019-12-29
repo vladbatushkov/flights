@@ -329,7 +329,7 @@ namespace FlightsGenerator
                         => File.ReadAllLines(dataFolder + Airport.File)
                             .Skip(1)
                             .Select(split)
-                            .Where(x => x.Length > 9 && !string.IsNullOrWhiteSpace(x[4]))
+                            .Where(x => x.Length > 9 && !string.IsNullOrWhiteSpace(x[4]) && x[4].Length == 3)
                             .Select(x => tryToMap(x, y => Airport.Create(y[1], y[4], y[3], y[2], Convert.ToDouble(y[6]), Convert.ToDouble(y[7]), Convert.ToInt16(y[9]))))
                             .Where(x => x != null)
                             .ToDictionary(x => x.Code, x => x);
@@ -439,7 +439,9 @@ namespace FlightsGenerator
                             {
                                 write(flightsCache.Distinct(FlightEquals.Create()), Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node);
                             }
-                        },
+                        });
+
+                    Parallel.Invoke(
                         () =>
                         {
                             write(new object[] { }, AirportDay.FileHeader(), AirportDay.Header, (x) => string.Empty);
@@ -455,10 +457,17 @@ namespace FlightsGenerator
                             write(new object[] { }, InFlight.FileHeader(), InFlight.Header, (x) => string.Empty);
                             write(new object[] { }, OutFlight.FileHeader(), OutFlight.Header, (x) => string.Empty);
                             write(new object[] { }, OperatedBy.FileHeader(), OperatedBy.Header, (x) => string.Empty);
-                            foreach (var day in days)
+                            foreach (var day in Enumerable.Append(days, days.Last().AddDays(1)))
                             {
                                 write(flightsCache, InFlight.File(day), string.Empty, InFlight.MapRow(day), Types.Relationship);
                                 write(flightsCache, OutFlight.File(day), string.Empty, OutFlight.MapRow(day), Types.Relationship);
+                            }
+                        },
+                        () =>
+                        {
+                            write(new object[] { }, OperatedBy.FileHeader(), OperatedBy.Header, (x) => string.Empty);
+                            foreach (var day in days)
+                            {
                                 write(flightsCache, OperatedBy.File(day), string.Empty, OperatedBy.MapRow(day), Types.Relationship);
                             }
                         }

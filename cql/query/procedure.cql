@@ -1,3 +1,7 @@
+MATCH (a:Airport)-[:HAS_DAY]->(ad:AirportDay)-[r1:SVO_FLIGHT]->(f:Flight)-[r2:SVO_FLIGHT]->(bd:AirportDay)<-[:HAS_DAY]-(b:Airport)
+WHERE a.code = "BKK"
+RETURN a, b, ad, bd, f
+
 WITH { acode: 'KZN', bcode: 'EGO', date: '20200101' } as params
 MATCH (ad:AirportDay { code: params.acode + "_" + params.date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: params.bcode + "_" + params.date })
 WHERE type(r1) = params.acode + "_FLIGHT" AND type(r2) = params.acode + "_FLIGHT"
@@ -5,11 +9,13 @@ MATCH (f)-[:OPERATED_BY]->(a:Airline)
 RETURN f, a
 
 CALL apoc.custom.asProcedure('getFlights',
-  'MATCH (ad:AirportDay { code: $acode + "_" + $date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: $bcode + "_" + $date }) WHERE type(r1) = $acode + "_FLIGHT" AND type(r2) = $acode + "_FLIGHT" MATCH (f)-[:OPERATED_BY]->(a:Airline) RETURN f as flight, a as company', 'read',
+  'MATCH (ad:AirportDay { code: $acode + "_" + $date })-[r1]->(f:Flight)-[r2]->(bd:AirportDay { code: $bcode + "_" + $date }) WHERE type(r1) = $bcode + "_FLIGHT" AND type(r2) = $bcode + "_FLIGHT" MATCH (f)-[:OPERATED_BY]->(a:Airline) RETURN f as flight, a as company', 'read',
   [['flight','NODE'], ['company','NODE']],[['acode','STRING'], ['bcode','STRING'], ['date','STRING']], 'get flights by code A to B and date')
 
 CALL custom.getFlights('DME', 'BKK', '20200101') YIELD flight, company
 RETURN flight, company
+
+CALL dbms.clearQueryCaches()
 
 //hop0, hop1, hop2
 PROFILE WITH { a: "Moscow", b: "Stockholm", date: "20200101" } as params

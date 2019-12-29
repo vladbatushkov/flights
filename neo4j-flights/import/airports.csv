@@ -317,7 +317,6 @@ ESS,Essen Mulheim Airport,Germany,Essen,"{latitude:51.4023017883301, longitude:6
 BFE,Bielefeld Airport,Germany,Bielefeld,"{latitude:51.964722, longitude:8.544444}",1
 MGL,Mönchengladbach Airport,Germany,Moenchengladbach,"{latitude:51.230278, longitude:6.504444}",1
 PAD,Paderborn Lippstaday Airport,Germany,Paderborn,"{latitude:51.6141014099, longitude:8.61631965637}",1
-dayM,Dortmund Airport,Germany,Dortmund,"{latitude:51.5182991028, longitude:7.61223983765}",1
 AGB,Augsburg Airport,Germany,Augsburg,"{latitude:48.425278, longitude:10.931667}",1
 OBF,Oberpfaffenhofen Airport,Germany,Oberpfaffenhofen,"{latitude:48.081402, longitude:11.2831}",1
 RBM,Straubing Airport,Germany,Straubing,"{latitude:48.9008331298828, longitude:12.5166673660278}",1
@@ -775,7 +774,6 @@ MNB,Muanda Airport,Congo (Kinshasa),Muanda,"{latitude:-5.93086004257202, longitu
 FDU,Bandundu Airport,Congo (Kinshasa),Bandoundu,"{latitude:-3.31132006645203, longitude:17.3817005157471}",1
 KKW,Kikwit Airport,Congo (Kinshasa),Kikwit,"{latitude:-5.03576993942261, longitude:18.7856006622314}",1
 MDK,Mbandaka Airport,Congo (Kinshasa),Mbandaka,"{latitude:0.0226000007242, longitude:18.2887001038}",1
-Bday,Gbadolite Airport,Congo (Kinshasa),Gbadolite,"{latitude:4.25321006774902, longitude:20.9752998352051}",1
 GMA,Gemena Airport,Congo (Kinshasa),Gemena,"{latitude:3.23536992073, longitude:19.7712993622}",1
 KLI,Kotakoli Airport,Congo (Kinshasa),Kotakoli,"{latitude:4.15763998031616, longitude:21.650899887085}",1
 LIQ,Lisala Airport,Congo (Kinshasa),Lisala,"{latitude:2.17066, longitude:21.496901}",1
@@ -1611,7 +1609,6 @@ UET,Quetta International Airport,Pakistan,Quetta,"{latitude:30.2513999938965, lo
 RYK,Shaikh Zaid Airport,Pakistan,Rahim Yar Khan,"{latitude:28.3838996887207, longitude:70.2796020507812}",5
 RAZ,Rawalakot Airport,Pakistan,Rawala Kot,"{latitude:33.8497009277344, longitude:73.7981033325195}",5
 SKZ,Sukkur Airport,Pakistan,Sukkur,"{latitude:27.7220001220703, longitude:68.7917022705078}",5
-Sday,Saidu Sharif Airport,Pakistan,Saidu Sharif,"{latitude:34.8135986328125, longitude:72.3527984619141}",5
 SUL,Sui Airport,Pakistan,Sui,"{latitude:28.6450996398926, longitude:69.1769027709961}",5
 BDN,Talhar Airport,Pakistan,Talhar,"{latitude:24.8414993286133, longitude:68.8384017944336}",5
 WAF,Wana Airport,Pakistan,Wana,"{latitude:32.3046989440918, longitude:69.5703964233398}",5
@@ -1745,7 +1742,6 @@ PAG,Pagadian Airport,Philippines,Pagadian,"{latitude:7.83073144787, longitude:12
 GES,General Santos International Airport,Philippines,Romblon,"{latitude:6.05800008774, longitude:125.096000671}",8
 ZAM,Zamboanga International Airport,Philippines,Zamboanga,"{latitude:6.92242002487183, longitude:122.059997558594}",8
 BAG,Loakan Airport,Philippines,Baguio,"{latitude:16.3750991821289, longitude:120.620002746582}",8
-dayE,Daet Airport,Philippines,Daet,"{latitude:14.1291999816895, longitude:122.980003356934}",8
 SJI,San Jose Airport,Philippines,San Jose,"{latitude:12.3614997864, longitude:121.04699707}",8
 MBO,Mamburao Airport,Philippines,Mamburao,"{latitude:13.2081003189087, longitude:120.605003356934}",8
 BQA,Dr.Juan C. Angara Airport,Philippines,Baler,"{latitude:15.729309, longitude:121.500034}",8
@@ -2243,7 +2239,6 @@ MFM,Macau International Airport,Macau,Macau,"{latitude:22.149599, longitude:113.
 PBH,Paro Airport,Bhutan,Thimphu,"{latitude:27.4032001495, longitude:89.4245986938}",6
 MLE,Malé International Airport,Maldives,Male,"{latitude:4.19183015823364, longitude:73.5290985107422}",5
 DMK,Don Mueang International Airport,Thailand,Bangkok,"{latitude:13.9125995636, longitude:100.607002258}",7
-Kday,Kamphaeng Saen Airport,Thailand,Nakhon Pathom,"{latitude:14.1020002365, longitude:99.9171981812}",7
 UTP,U-Tapao International Airport,Thailand,Pattaya,"{latitude:12.6799001693726, longitude:101.004997253418}",7
 LPT,Lampang Airport,Thailand,Lampang,"{latitude:18.2709007263184, longitude:99.5042037963867}",7
 PRH,Phrae Airport,Thailand,Phrae,"{latitude:18.1322002410889, longitude:100.165000915527}",7
@@ -2535,7 +2530,6 @@ BIX,Keesler Air Force Base,United States,Biloxi,"{latitude:30.4104003906, longit
 LSF,Lawson Army Air Field (Fort Benning),United States,Fort Benning,"{latitude:32.3372993469, longitude:-84.9913024902}",-5
 NQI,Kingsville Naval Air Station,United States,Kingsville,"{latitude:27.5072002411, longitude:-97.8097000122}",-6
 FRI,Marshall Army Air Field,United States,Fort Riley,"{latitude:39.05530167, longitude:-96.76450348}",-6
-Mday,Harrisburg International Airport,United States,Harrisburg,"{latitude:40.1935005188, longitude:-76.7633972168}",-5
 LNK,Lincoln Airport,United States,Lincoln,"{latitude:40.851001739502, longitude:-96.7592010498047}",-6
 LAN,Capital City Airport,United States,Lansing,"{latitude:42.7787017822266, longitude:-84.58740234375}",-5
 MUE,Waimea Kohala Airport,United States,Kamuela,"{latitude:20.0013008117676, longitude:-155.667999267578}",-10
@@ -2632,7 +2626,6 @@ GSB,Seymour Johnson Air Force Base,United States,Goldsboro,"{latitude:35.3394012
 PVD,Theodore Francis Green State Airport,United States,Providence,"{latitude:41.732601, longitude:-71.420403}",-5
 SBY,Salisbury Ocean City Wicomico Regional Airport,United States,Salisbury,"{latitude:38.3404998779297, longitude:-75.5102996826172}",-5
 BUR,Bob Hope Airport,United States,Burbank,"{latitude:34.2006988525391, longitude:-118.359001159668}",-8
-dayW,Detroit Metropolitan Wayne County Airport,United States,Detroit,"{latitude:42.2123985290527, longitude:-83.353401184082}",-5
 TPA,Tampa International Airport,United States,Tampa,"{latitude:27.9755001068115, longitude:-82.533203125}",-5
 PMB,Pembina Municipal Airport,United States,Pembina,"{latitude:48.9425010681, longitude:-97.2407989502}",-6
 POE,Polk Army Air Field,United States,Fort Polk,"{latitude:31.0447998, longitude:-93.1917038}",-6
@@ -3611,7 +3604,6 @@ ISE,Süleyman Demirel International Airport,Turkey,Isparta,"{latitude:37.8554000
 EDO,Balıkesir Körfez Airport,Turkey,Balikesir Korfez,"{latitude:39.554599762, longitude:27.0137996674}",3
 SZF,Samsun Çarşamba Airport,Turkey,Samsun,"{latitude:41.254501, longitude:36.567101}",3
 ILZ,Žilina Airport,Slovakia,Žilina,"{latitude:49.2314987183, longitude:18.6135005951}",1
-Gday,JAGS McCartney International Airport,Turks and Caicos Islands,Cockburn Town,"{latitude:21.4444999694824, longitude:-71.1423034667969}",-4
 MDS,Middle Caicos Airport,Turks and Caicos Islands,Middle Caicos,"{latitude:21.82602, longitude:-71.8025}",-4
 SLX,Salt Cay Airport,Turks and Caicos Islands,Salt Cay,"{latitude:21.3330001831, longitude:-71.1999969482}",-4
 AZS,Samaná El Catey International Airport,Dominican Republic,Samana,"{latitude:19.2670001984, longitude:-69.7419967651}",-4
@@ -3916,7 +3908,6 @@ TMC,Tambolaka Airport,Indonesia,Waikabubak-Sumba Island,"{latitude:-9.40972, lon
 BUI,Bokondini Airport,Indonesia,Bokondini-Papua Island,"{latitude:-3.6822, longitude:138.6755}",9
 SEH,Senggeh Airport,Indonesia,Senggeh-Papua Island,"{latitude:-3.45, longitude:140.779}",9
 TJS,Tanjung Harapan Airport,Indonesia,Tanjung Selor-Borneo Island,"{latitude:2.83583333333, longitude:117.373611111}",8
-dayD,Datadawai Airport,Indonesia,Datadawai-Borneo Island,"{latitude:0.8106, longitude:114.5306}",8
 BEJ,Kalimarau Airport,Indonesia,Tanjung Redep-Borneo Island,"{latitude:2.1555, longitude:117.431999}",8
 TJG,Warukin Airport,Indonesia,Tanjung-Borneo Island,"{latitude:-2.21655988693, longitude:115.435997009}",8
 SMQ,Sampit(Hasan) Airport,Indonesia,Sampit-Borneo Island,"{latitude:-2.49919009209, longitude:112.974998474}",7
@@ -4235,7 +4226,6 @@ VGT,North Las Vegas Airport,United States,Las Vegas,"{latitude:36.21070098877, l
 ENW,Kenosha Regional Airport,United States,Kenosha,"{latitude:42.59569931, longitude:-87.92780304}",-6
 MTJ,Montrose Regional Airport,United States,Montrose CO,"{latitude:38.5097999573, longitude:-107.893997192}",-7
 RIW,Riverton Regional Airport,United States,Riverton WY,"{latitude:43.064201355, longitude:-108.459999084}",-7
-Pday,Eastern Oregon Regional At Pendleton Airport,United States,Pendleton,"{latitude:45.695098877, longitude:-118.841003418}",-8
 LYM,Lympne Airport,United Kingdom,Lympne,"{latitude:51.08, longitude:1.013}",0
 PKH,Porto Cheli Airport,Greece,Porto Heli,"{latitude:37.297501, longitude:23.1478}",2
 NOA,Nowra Airport,Australia,Nowra,"{latitude:-34.9488983154297, longitude:150.537002563477}",10
@@ -4453,7 +4443,6 @@ YOP,Rainbow Lake Airport,Canada,Rainbow Lake,"{latitude:58.4914016723633, longit
 YBY,Bonnyville Airport,Canada,Bonnyville,"{latitude:54.304199, longitude:-110.744003}",-7
 ZNA,Nanaimo Harbour Water Airport,Canada,Nanaimo,"{latitude:49.1833000183, longitude:-123.949996948}",-8
 YGG,Ganges Seaplane Base,Canada,Ganges,"{latitude:48.8545, longitude:-123.4969}",-8
-Yday,Boundary Bay Airport,Canada,Boundary Bay,"{latitude:49.0742, longitude:-123.012001}",-8
 YLY,Langley Airport,Canada,Langley Township,"{latitude:49.1007995605, longitude:-122.630996704}",-8
 YFJ,Wekweètì Airport,Canada,Wekweeti,"{latitude:64.190804, longitude:-114.077002}",-7
 RNI,Corn Island,Nicaragua,Corn Island,"{latitude:12.1628999710083, longitude:-83.0637969970703}",-6
@@ -4608,7 +4597,6 @@ FIZ,Fitzroy Crossing Airport,Australia,Fitzroy Crossing,"{latitude:-18.181900024
 RVT,Ravensthorpe Airport,Australia,Ravensthorpe,"{latitude:-33.7971992493, longitude:120.208000183}",8
 PVU,Provo Municipal Airport,United States,Provo,"{latitude:40.219200134277, longitude:-111.72299957275}",-7
 SBS,Steamboat Springs Bob Adams Field,United States,Steamboat Springs,"{latitude:40.5163002, longitude:-106.8659973}",-7
-dayA,Delta Municipal Airport,United States,Delta,"{latitude:39.3805999756, longitude:-112.508003235}",-7
 PUC,Carbon County Regional/Buck Davis Field,United States,Price,"{latitude:39.61389923, longitude:-110.7509995}",-7
 LAM,Los Alamos Airport,United States,Los Alamos,"{latitude:35.8797988892, longitude:-106.268997192}",-7
 HII,Lake Havasu City Airport,United States,Lake Havasu City,"{latitude:34.571098, longitude:-114.358002}",-7
@@ -4820,7 +4808,6 @@ FBE,Francisco Beltrão Airport,Brazil,Francisco Beltrao,"{latitude:-26.059200286
 CFO,Confresa Airport,Brazil,Confresa,"{latitude:-10.6344003677368, longitude:-51.5635986328125}",-4
 AAF,Apalachicola Regional Airport,United States,Apalachicola,"{latitude:29.72750092, longitude:-85.02749634}",-5
 UMU,Umuarama Airport,Brazil,Umuarama,"{latitude:-23.7987003326416, longitude:-53.3138008117676}",-3
-dayI,Diamantina Airport,Brazil,Diamantina,"{latitude:-18.232000351, longitude:-43.6503982544}",-3
 FBA,Fonte Boa Airport,Brazil,Fonte Boa,"{latitude:-2.53260993958, longitude:-66.0831985474}",-4
 OLC,Senadora Eunice Micheles Airport,Brazil,Sao Paulo de Olivenca,"{latitude:-3.46792950765, longitude:-68.9204120636}",-4
 HUW,Humaitá Airport,Brazil,Humaita,"{latitude:-7.53212022781, longitude:-63.072101593}",-4
@@ -5151,9 +5138,7 @@ CUH,Cushing Municipal Airport,United States,Cushing,"{latitude:35.9499015808, lo
 CSM,Clinton Sherman Airport,United States,Clinton,"{latitude:35.3398017883, longitude:-99.2005004883}",-6
 WLD,Strother Field,United States,Winfield,"{latitude:37.168598175, longitude:-97.0375976562}",-6
 PWA,Wiley Post Airport,United States,Oklahoma City,"{latitude:35.53419876, longitude:-97.64710236}",-6
-dayN,Shreveport Downtown Airport,United States,Shreveport,"{latitude:32.5401992798, longitude:-93.7450027466}",-6
 SEP,Stephenville Clark Regional Airport,United States,Stephenville,"{latitude:32.215301513672, longitude:-98.177696228027}",-6
-Aday,Ada Regional Airport,United States,Ada,"{latitude:34.804298, longitude:-96.671303}",-6
 IRB,Iraan Municipal Airport,United States,Iraan,"{latitude:30.9057006836, longitude:-101.891998291}",-6
 YEL,Elliot Lake Municipal Airport,Canada,ELLIOT LAKE,"{latitude:46.351398468, longitude:-82.5614013672}",-5
 IKB,Wilkes County Airport,United States,North Wilkesboro,"{latitude:36.2228012085, longitude:-81.0982971191}",-5
@@ -5181,7 +5166,6 @@ SZV,Suzhou Guangfu Airport,China,Suzhou,"{latitude:31.2631, longitude:120.401001
 LII,Mulia Airport,Indonesia,Mulia,"{latitude:-3.7018, longitude:137.957}",9
 NTI,Stenkol Airport,Indonesia,Bintuni,"{latitude:-2.1033, longitude:133.5164}",9
 WSR,Wasior Airport,Indonesia,Wasior,"{latitude:-2.721, longitude:134.5061}",9
-dayB,Silangit Airport,Indonesia,Siborong-Borong,"{latitude:2.25973, longitude:98.991898}",7
 MEQ,Seunagan Airport,Indonesia,Nagan Raya,"{latitude:4.25, longitude:96.2170028686523}",7
 BUW,Betoambari Airport,Indonesia,Bau-Bau,"{latitude:-5.48687982559204, longitude:122.569000244141}",8
 KAZ,Kao Airport,Indonesia,Kao,"{latitude:1.1852799654007, longitude:127.896003723145}",9
@@ -5441,7 +5425,6 @@ JSJ,Jiansanjiang Airport,China,Jiansanjiang,"{latitude:47.11, longitude:132.6602
 WMT,Zunyi Maotai Airport,China,Zunyi,"{latitude:27.81638, longitude:106.33268}",8
 LLB,Libo Airport,China,Libo,"{latitude:25.4525, longitude:107.961667}",8
 CDE,Chengde Puning Airport,China,Chengde,"{latitude:41.1225, longitude:118.073889}",8
-dayU,Wudalianchi Dedu Airport,China,Wudalianchi,"{latitude:48.445, longitude:126.133}",8
 EJN,Ejin Banner-Taolai Airport,China,Ejin Banner,"{latitude:42.0155, longitude:101.0005}",8
 RHT,Alxa Right Banner Badanjilin Airport,China,Alxa Right Banner,"{latitude:39.225, longitude:101.546}",8
 HUO,Holingol Huolinhe Airport,China,Holingol,"{latitude:45.487222, longitude:119.407222}",8
