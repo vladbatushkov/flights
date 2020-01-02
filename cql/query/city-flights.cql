@@ -25,6 +25,7 @@ RETURN stops, SIZE(stops) as stops_count, distance
 ORDER by stops_count//, distance ASC
 LIMIT 100;
 
+CREATE INDEX ON :Airport(country, city);
 CREATE INDEX ON :Airport(city);
 CREATE INDEX ON :Airport(code);
 CREATE INDEX ON :AirportDay(code);
