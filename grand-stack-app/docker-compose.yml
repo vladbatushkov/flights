@@ -2,20 +2,20 @@ version: '3'
 
 services:
 
-  neo4j:
-    image: vladbatushkov/neo4j-flights:latest
-    ports:
-      - 7474:7474
-      - 7687:7687
+  # neo4j:
+  #   image: vladbatushkov/neo4j-flights:dev
+  #   ports:
+  #     - 7474:7474
+  #     - 7687:7687
 
   api:
     build: ./api
     ports:
       - 4001:4001
-    links:
-    - neo4j
-    depends_on:
-    - neo4j
+    # links:
+    # - neo4j
+    # depends_on:
+    # - neo4j
 
   ui:
     build: ./ui

@@ -1,13 +1,17 @@
 FROM vladbatushkov/neo4j-apoc-algo-graphql:latest
 
-ENV NEO4J_AUTH=none
 ENV NEO4J_dbms_active__database=flights.db
+ENV NEO4J_AUTH=neo4j/test
 
 COPY import.sh import.sh
 COPY import/*.csv import/
+
+COPY getFlights.cql getFlights.cql
+COPY setup.sh setup.sh
+COPY wrapper.sh wrapper.sh
 
 ENV EXTENSION_SCRIPT=import.sh
 
 EXPOSE 7474 7473 7687
 
-CMD [ "neo4j" ]
+ENTRYPOINT [ "./wrapper.sh" ]

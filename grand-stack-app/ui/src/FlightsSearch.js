@@ -7,7 +7,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TableSortLabel,
   Typography,
   TextField,
   Button,
@@ -108,23 +107,11 @@ class FlightsSearch extends React.Component {
 
     fetch(process.env.REACT_APP_NEO4J_REST_API_URI, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json; charset=UTF-8' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json; charset=UTF-8', 'Authorization': 'Basic bmVvNGo6dGVzdA==' },
       body: JSON.stringify({
         "statements" : [ {
           "statement" :
-            `MATCH (a:Airport), (b:Airport)
-            WHERE a.city = "` + this.state.filter.from + `" AND b.city = "` + this.state.filter.to + `"
-            WITH distance(point({ latitude: AVG(a.location.latitude), longitude: AVG(a.location.longitude) }),
-            point({ latitude: AVG(b.location.latitude), longitude: AVG(b.location.longitude) })) / 1000 * 1.25 as max_distance
-            MATCH p = ((a:Airport)-[:FLIES_TO*1..3]->(b:Airport))
-            WHERE a.city = "` + this.state.filter.from + `" AND b.city = "` + this.state.filter.to + `" AND apoc.coll.sum([x IN relationships(p) | x.distance ]) <= max_distance AND SIZE(apoc.coll.duplicates(nodes(p))) = 0
-            WITH nodes(p) as stops
-            UNWIND apoc.coll.pairsMin(stops) as stop
-            CALL apoc.cypher.run('MATCH (ad:AirportDay { code: $' + 'adcode })-[:' + stop[0].code + '_FLIGHT]->(f:Flight)-[:' + stop[0].code + '_FLIGHT]->(bd:AirportDay { code: $' + 'bdcode }) MATCH (f)-[:OPERATED_BY]->(c:Airline) RETURN f as flight, a, b, c as company',
-            { a: stop[0], adcode: stop[0].code + '_' + "` + this.state.filter.date + `", b: stop[1], bdcode: stop[1].code + '_' + "` + this.state.filter.date + `" }) yield value
-            WITH stops, stop, collect(distinct value) as flights
-            RETURN stops as route, { stopsCount: SIZE(stops) - 1, stops: collect({ stop: stop, flights: flights }) } as routeDetails
-            ORDER BY routeDetails.stopsCount ASC`
+            "CALL custom.getFlights('" + this.state.filter.from +"', '" + this.state.filter.to +"', '" + this.state.filter.date + "', 1, 4) YIELD result RETURN result"
         }]
       }),
     }).then(res => res.json())
@@ -133,7 +120,7 @@ class FlightsSearch extends React.Component {
           console.log(res.results);
           this.setState({
             isLoaded: true,
-            items: this.mapResults(res.results[0])
+            items: res.results[0].data
           });
         },
         (error) => {
@@ -144,50 +131,7 @@ class FlightsSearch extends React.Component {
         }
       )
   }
-
-  mapResults = (res) =>{
-    var data = res.data.map(x => ({ route: x.row[0], routeDetails: x.row[1] }));
-    console.log(data);
-    return data;
-  }
   
-  cartesian = (result, data, idx) => {    
-    if (data.length === 1){
-      var temp = [];
-      for(var j = 0; j < data[0].length; j++) {
-        temp[j] = [];
-        temp[j].push(data[0][j]);
-      }
-      return [...temp];
-    }
-
-    if (idx === data.length) {      
-      return result;
-    }
-    
-    result = this.merge(result, data[idx]);
-    var res = this.cartesian(result, data, idx + 1);
-    console.log(`result cartesian:`+ JSON.stringify(res));
-    return res;
-  }
-
-  merge = (arr1, arr2) => {
-    if (arr1.length === 0) {
-      return arr2;
-    }
-    var result = [];
-    for(var i = 0; i < arr1.length; i++) {
-      result[i] = [];
-      for(var j = 0; j < arr2.length; j++) {
-        result[i][j] = [arr1[i]];
-        result[i][j].push(arr2[j]);
-        result[i][j] = result[i][j].flat();
-      }
-    }
-    console.log('result merge:' + JSON.stringify(result));
-    return result.flat();
-  }
-
   render() {
     const { classes } = this.props;    
     const { error, isLoaded } = this.state;
@@ -201,26 +145,33 @@ class FlightsSearch extends React.Component {
       body = (<div>Loading...</div>);
     } else {
       body = (<Table className={this.props.classes.table}>
+      <TableHead>
+        <TableRow>
+        <TableCell>Total result: {this.state.items.length} flights founded</TableCell>
+        </TableRow>
+      </TableHead>
       <TableBody>
-        {this.state.items.map(n => {
-          const flights = this.cartesian([], n.routeDetails.stops.map(x => x.flights), 0);
+        {this.state.items.map((x, xi) => {
+          const total = x.row[0].flights.map(y => y.flight.price).reduce((a, b) => a + b, 0);
           return (
             <TableRow>
               <TableCell>
-                  {flights.map(y => {
-                      const total = y.map(z => z.flight.price).reduce((a, b) => a + b, 0);
-                      return (<Card className={classes.card}>
-                        <CardContent>
-                      {y.map(z => <p>Flight {z.flight.duration} from {z.a.name} ({z.a.code}, {z.a.city}) to {z.b.name} ({z.b.code}, {z.b.city}) by {z.company.name}: ${z.flight.price} THB</p>)}
-                        </CardContent>
-                        <CardActions>
-                          <Button size="small" color="primary">
-                            {total} THB
-                          </Button>
-                        </CardActions>
-                      </Card>);
-                    }
-                  )}
+                <p>Item №{xi + 1}</p>
+                <Card className={classes.card}>
+                  {x.row[0].flights.map((y, yi) => {
+                    return (
+                      <CardContent>
+                        <p>Flight {y.flight.flight_number} duration {y.flight.duration.substr(2)} operates by {y.company.name}: {y.flight.price} THB</p>
+                        <p>From {x.row[0].route[yi].name} departure {y.flight.departs_local} to {x.row[0].route[yi + 1].name} arrival {y.flight.arrival_local}</p>
+                      </CardContent>
+                    );
+                  })}
+                  <CardActions>
+                    <Button size="small" color="primary">
+                      {total} THB
+                    </Button>
+                  </CardActions>
+                </Card>
               </TableCell>
             </TableRow>
           );
