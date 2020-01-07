@@ -1,5 +1,6 @@
 FROM vladbatushkov/neo4j-apoc-algo-graphql:latest
 
+ENV NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*,graphql.*
 ENV NEO4J_dbms_active__database=flights.db
 ENV NEO4J_AUTH=neo4j/test
 

@@ -1,4 +1,4 @@
-WITH { a: "Moscow", b: "New York", date: "20200101", tmin: 1, tmax: 4 } as params
+WITH { a: "Moscow", b: "New York", date: "20200102", tmin: 1, tmax: 6 } as params
 MATCH (a:Airport { city: params.a })
 WITH params, AVG(a.location.latitude) as ala, AVG(a.location.longitude) as alo
 MATCH (b:Airport { city: params.b })
@@ -14,20 +14,26 @@ WHERE list.size = 2
     AND type(r1) = list.route[1].code + "_FLIGHT"
 OPTIONAL MATCH (f1)-[:OPERATED_BY]->(a1:Airline)
 WITH collect({ stops: 0, route: list.route, flights: [{ flight: f1, company: a1 }] }) as direct, list, params
-OPTIONAL MATCH (ad:AirportDay)-[r1]->(f1:Flight)-[r2]->(:AirportDay)-[r3]->(f2:Flight)
+OPTIONAL MATCH (ad:AirportDay)-[r1]->(f1:Flight)-[r2]->(bd:AirportDay)-[r3]->(f2:Flight)
 WHERE list.size = 3
 	AND ad.code = list.route[0].code + "_" + params.date
+	AND bd.code = list.route[1].code + "_" + f1.arrival_local.year + CASE WHEN f1.arrival_local.month > 9 THEN "" ELSE "0" END + f1.arrival_local.month + CASE WHEN f1.arrival_local.day > 9 THEN "" ELSE "0" END + f1.arrival_local.day
     AND type(r1) = list.route[1].code + "_FLIGHT"
+    AND type(r2) = list.route[1].code + "_FLIGHT"
     AND type(r3) = list.route[2].code + "_FLIGHT"
     AND f1.arrival_local + duration("PT" + params.tmin + "H") <= f2.departs_local
     AND f1.arrival_local + duration("PT" + params.tmax + "H") >= f2.departs_local
 OPTIONAL MATCH (f1)-[:OPERATED_BY]->(a1:Airline), (f2)-[:OPERATED_BY]->(a2:Airline)
 WITH collect({ stops: 1, route: list.route, flights: [{ flight: f1, company: a1 }, { flight: f2, company: a2 }] }) as transfer, direct, list, params
-OPTIONAL MATCH (ad:AirportDay)-[r1]->(f1:Flight)-[r2]->(:AirportDay)-[r3]->(f2:Flight)-[r4]->(:AirportDay)-[r5]->(f3:Flight)
+OPTIONAL MATCH (ad:AirportDay)-[r1]->(f1:Flight)-[r2]->(bd:AirportDay)-[r3]->(f2:Flight)-[r4]->(cd:AirportDay)-[r5]->(f3:Flight)
 WHERE list.size = 4
 	AND ad.code = list.route[0].code + "_" + params.date
+	AND bd.code = list.route[1].code + "_" + f1.arrival_local.year + CASE WHEN f1.arrival_local.month > 9 THEN "" ELSE "0" END + f1.arrival_local.month + CASE WHEN f1.arrival_local.day > 9 THEN "" ELSE "0" END + f1.arrival_local.day
+	AND cd.code = list.route[2].code + "_" + f2.arrival_local.year + CASE WHEN f2.arrival_local.month > 9 THEN "" ELSE "0" END + f2.arrival_local.month + CASE WHEN f2.arrival_local.day > 9 THEN "" ELSE "0" END + f2.arrival_local.day
     AND type(r1) = list.route[1].code + "_FLIGHT"
+    AND type(r2) = list.route[1].code + "_FLIGHT"
     AND type(r3) = list.route[2].code + "_FLIGHT"
+    AND type(r4) = list.route[2].code + "_FLIGHT"
     AND type(r5) = list.route[3].code + "_FLIGHT"
     AND f1.arrival_local + duration("PT" + params.tmin + "H") <= f2.departs_local
     AND f1.arrival_local + duration("PT" + params.tmax + "H") >= f2.departs_local

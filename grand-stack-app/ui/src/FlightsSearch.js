@@ -46,8 +46,8 @@ const styles = theme => ({
     minWidth: "250px"
   },
   card: {
-    marginBottom: theme.spacing.unit * 2,
-  },
+    marginBottom: theme.spacing.unit * 2
+  }
 });
 
 class FlightsSearch extends React.Component {
@@ -68,7 +68,7 @@ class FlightsSearch extends React.Component {
       }
     };
 
-    this.handleClick = this.handleClick.bind(this)
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handleSortRequest = property => {
@@ -99,92 +99,118 @@ class FlightsSearch extends React.Component {
   };
 
   handleClick() {
-
     this.setState({
       isLoaded: false,
       items: []
     });
 
     fetch(process.env.REACT_APP_NEO4J_REST_API_URI, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json; charset=UTF-8', 'Authorization': 'Basic bmVvNGo6dGVzdA==' },
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json; charset=UTF-8",
+        Authorization: "Basic bmVvNGo6dGVzdA=="
+      },
       body: JSON.stringify({
-        "statements" : [ {
-          "statement" :
-            "CALL custom.getFlights('" + this.state.filter.from +"', '" + this.state.filter.to +"', '" + this.state.filter.date + "', 1, 4) YIELD result RETURN result"
-        }]
-      }),
-    }).then(res => res.json())
+        statements: [
+          {
+            statement:
+              "CALL custom.getFlights('" +
+              this.state.filter.from +
+              "', '" +
+              this.state.filter.to +
+              "', '" +
+              this.state.filter.date +
+              "', 1, 6) YIELD result RETURN result"
+          }
+        ]
+      })
+    })
+      .then(res => res.json())
       .then(
-        (res) => {
+        res => {
           console.log(res.results);
           this.setState({
             isLoaded: true,
             items: res.results[0].data
           });
         },
-        (error) => {
+        error => {
           this.setState({
             isLoaded: true,
             error
           });
         }
-      )
+      );
   }
-  
+
   render() {
-    const { classes } = this.props;    
+    const { classes } = this.props;
     const { error, isLoaded } = this.state;
 
-
     let body = null;
-    
+
     if (error) {
-      body = (<div>Error: {error.message}</div>);
+      body = <div>Error: {error.message}</div>;
     } else if (!isLoaded) {
-      body = (<div>Loading...</div>);
+      body = <div>Loading...</div>;
     } else {
-      body = (<Table className={this.props.classes.table}>
-      <TableHead>
-        <TableRow>
-        <TableCell>Total result: {this.state.items.length} flights founded</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {this.state.items.map((x, xi) => {
-          const total = x.row[0].flights.map(y => y.flight.price).reduce((a, b) => a + b, 0);
-          return (
+      body = (
+        <Table className={this.props.classes.table}>
+          <TableHead>
             <TableRow>
               <TableCell>
-                <p>Item №{xi + 1}</p>
-                <Card className={classes.card}>
-                  {x.row[0].flights.map((y, yi) => {
-                    return (
-                      <CardContent>
-                        <p>Flight {y.flight.flight_number} duration {y.flight.duration.substr(2)} operates by {y.company.name}: {y.flight.price} THB</p>
-                        <p>From {x.row[0].route[yi].name} departure {y.flight.departs_local} to {x.row[0].route[yi + 1].name} arrival {y.flight.arrival_local}</p>
-                      </CardContent>
-                    );
-                  })}
-                  <CardActions>
-                    <Button size="small" color="primary">
-                      {total} THB
-                    </Button>
-                  </CardActions>
-                </Card>
+                Total result: {this.state.items.length} flights founded
               </TableCell>
             </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>);
+          </TableHead>
+          <TableBody>
+            {this.state.items.map((x, xi) => {
+              const total = x.row[0].flights
+                .map(y => y.flight.price)
+                .reduce((a, b) => a + b, 0);
+              return (
+                <TableRow>
+                  <TableCell>
+                    <p>Item №{xi + 1}</p>
+                    <Card className={classes.card}>
+                      {x.row[0].flights.map((y, yi) => {
+                        return (
+                          <CardContent>
+                            <p>
+                              Flight {y.flight.flight_number} duration{" "}
+                              {y.flight.duration.substr(2)} operates by{" "}
+                              {y.company.name}: {y.flight.price} THB
+                            </p>
+                            <p>
+                              From {x.row[0].route[yi].name} departure{" "}
+                              {y.flight.departs_local} to{" "}
+                              {x.row[0].route[yi + 1].name} arrival{" "}
+                              {y.flight.arrival_local}
+                            </p>
+                          </CardContent>
+                        );
+                      })}
+                      <CardActions>
+                        <Button size="small" color="primary">
+                          {total} THB
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      );
     }
-      return (
-        <Paper className={classes.root}>
-          <Typography variant="h2" gutterBottom className={classes.margined}>
-            Flights Search
-          </Typography>
-          <div>
+    return (
+      <Paper className={classes.root}>
+        <Typography variant="h2" gutterBottom className={classes.margined}>
+          Flights Search
+        </Typography>
+        <div>
           <TextField
             id="from"
             label="Flying from"
@@ -232,13 +258,13 @@ class FlightsSearch extends React.Component {
             margin="normal"
             className={classes.margined}
             onClick={this.handleClick}
-            >
+          >
             Search
           </Button>
-          </div>
-          {body}
-        </Paper>
-      );
+        </div>
+        {body}
+      </Paper>
+    );
   }
 }
 
