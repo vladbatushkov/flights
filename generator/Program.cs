@@ -140,7 +140,8 @@ namespace FlightsGenerator
 
         public static Func<Flight<Airport, Airline>, string> MapRow(DateTime day)
             => (Flight<Airport, Airline> f)
-            => {
+            =>
+            {
                 f.Duration = GetDuration(f.Airline, f.Distance);
                 f.Departure = GetDeparture(f, day);
                 f.Arrival = GetArrival(f.Departure, f.Duration, f.From, f.To);
@@ -404,6 +405,34 @@ namespace FlightsGenerator
                         }
                     }
 
+                    void writeFlights(IEnumerable<Flight<Airport, Airline>> items, DateTime day)
+                    {
+                        //Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node
+                        var pathFlights = importFolder + Flight<string, string>.FileFlights(day);
+                        var pathFlightsIn = importFolder + InFlight.File(day);
+                        var pathFlightsOut = importFolder + OutFlight.File(day);
+
+                        using (var fileWriterFlights = new StreamWriter(pathFlights))
+                        using (var fileWriterIn = new StreamWriter(pathFlightsIn))
+                        using (var fileWriterOut = new StreamWriter(pathFlightsOut))
+                        {
+                            foreach (var item in items)
+                            {
+                                fileWriterFlights.WriteLine(Flight<string, string>.MapRow(day)(item));
+                                fileWriterIn.WriteLine(InFlight.MapRow(day)(item));
+                                fileWriterOut.WriteLine(OutFlight.MapRow(day)(item));
+                            }
+                            var count = items.Count();
+
+                            countNodes += count;
+                            log($"File {pathFlights} of {count} node items generated");
+
+                            countRelationships += 2 * count;
+                            log($"File {pathFlightsIn} of {count} relationship items generated");
+                            log($"File {pathFlightsOut} of {count} relationship items generated");
+                        }
+                    }
+
                     Directory.CreateDirectory(importFolder);
                     logWriter = new StreamWriter(importFolder + fileLog, true);
                     log($"Files generation started");
@@ -426,6 +455,8 @@ namespace FlightsGenerator
                     );
 
                     var days = from d in Enumerable.Range(0, toDate.Subtract(fromDate).Days) select fromDate.AddDays(d);
+                    var nextDay = days.Last().AddDays(1);
+                    var daysWithNext = Enumerable.Append(days, nextDay);
                     flightsCache = sourceFlights(airlineCache, airportCache, routeCache).Distinct(AirportEquals.Create());
                     Parallel.Invoke(
                         () =>
@@ -435,9 +466,11 @@ namespace FlightsGenerator
                         () =>
                         {
                             write(new object[] { }, Flight<string, string>.FileFlightsHeader(), Flight<string, string>.Header, (x) => string.Empty);
+                            write(new object[] { }, InFlight.FileHeader(), InFlight.Header, (x) => string.Empty);
+                            write(new object[] { }, OutFlight.FileHeader(), OutFlight.Header, (x) => string.Empty);
                             foreach (var day in days)
                             {
-                                write(flightsCache, Flight<string, string>.FileFlights(day), string.Empty, Flight<string, string>.MapRow(day), Types.Node);
+                                writeFlights(flightsCache, day);
                             }
                         });
 
@@ -446,20 +479,10 @@ namespace FlightsGenerator
                         {
                             write(new object[] { }, AirportDay.FileHeader(), AirportDay.Header, (x) => string.Empty);
                             write(new object[] { }, HasDay.FileHeader(), HasDay.Header, (x) => string.Empty);
-                            foreach (var day in Enumerable.Append(days, days.Last().AddDays(1)))
+                            foreach (var day in daysWithNext)
                             {
                                 write(airportCache.Select(x => AirportDay.Create(x.Value, day)), AirportDay.File(day), string.Empty, AirportDay.MapRow, Types.Node);
                                 write(airportCache.Values, HasDay.File(day), string.Empty, HasDay.MapRow(day), Types.Relationship);
-                            }
-                        },
-                        () =>
-                        {
-                            write(new object[] { }, InFlight.FileHeader(), InFlight.Header, (x) => string.Empty);
-                            write(new object[] { }, OutFlight.FileHeader(), OutFlight.Header, (x) => string.Empty);
-                            foreach (var day in Enumerable.Append(days, days.Last().AddDays(1)))
-                            {
-                                write(flightsCache, InFlight.File(day), string.Empty, InFlight.MapRow(day), Types.Relationship);
-                                write(flightsCache, OutFlight.File(day), string.Empty, OutFlight.MapRow(day), Types.Relationship);
                             }
                         },
                         () =>
