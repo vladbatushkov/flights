@@ -1,4 +1,5 @@
-import { typeDefs } from "./graphql-schema";
+//import { typeDefs, resolvers } from "./graphql-schema";
+import { typeDefs, resolvers } from "./schema";
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
 import { v1 as neo4j } from "neo4j-driver";
@@ -18,9 +19,16 @@ const app = express();
  * https://grandstack.io/docs/neo4j-graphql-js-api.html#makeaugmentedschemaoptions-graphqlschema
  */
 
-const schema = makeAugmentedSchema({
-  typeDefs
-});
+ const schema = makeAugmentedSchema({
+  typeDefs,
+  resolvers,
+  config: {
+    query: {
+      exclude: ["FlightsSearchResult", "FlightInfo"]
+    },
+    mutation: false,
+  }
+})
 
 /*
  * Create a Neo4j driver instance to connect to the database
@@ -29,10 +37,10 @@ const schema = makeAugmentedSchema({
  */
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "bolt://localhost:7687",
-  // neo4j.auth.basic(
-  //   process.env.NEO4J_USER || "neo4j",
-  //   process.env.NEO4J_PASSWORD || "neo4j"
-  // )
+  neo4j.auth.basic(
+    process.env.NEO4J_USER || "neo4j",
+    process.env.NEO4J_PASSWORD || "test"
+  )
 );
 
 /*

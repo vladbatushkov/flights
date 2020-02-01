@@ -14,16 +14,16 @@
   "license": "MIT",
   "dependencies": {
     "apollo-boost": "^0.3.1",
-    "apollo-cache-inmemory": "^1.6.3",
-    "apollo-client": "^2.6.4",
+    "apollo-cache-inmemory": "^1.6.5",
+    "apollo-client": "^2.6.8",
     "apollo-link-http": "^1.5.15",
-    "apollo-server": "^2.8.2",
-    "apollo-server-express": "^2.9.7",
+    "apollo-server": "^2.9.16",
+    "apollo-server-express": "^2.9.16",
     "braces": ">=2.3.1",
     "dotenv": "^7.0.0",
     "graphql-tag": "^2.10.1",
     "neo4j-driver": "^1.7.5",
-    "neo4j-graphql-js": "^2.7.1",
+    "neo4j-graphql-js": "^2.12.0",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {

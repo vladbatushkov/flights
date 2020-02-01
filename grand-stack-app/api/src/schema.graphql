@@ -10,3 +10,25 @@ type Airport {
   country: String!
   city: String!
 }
+
+type Flight {
+  flight_number: String!
+}
+
+type FlightData {
+  flight: Flight @neo4j_ignore
+  company: Airline @neo4j_ignore
+}
+
+type FlightResult {
+  flights: [FlightData] @neo4j_ignore
+  route: [Airport] @neo4j_ignore
+  stops: Int!
+}
+
+type Flights {
+  search(from: String, to: String, date: String): [FlightResult] @cypher(statement: """
+      CALL custom.getFlights($from, $to, $date, 1, 6) YIELD result RETURN result
+    """
+    )
+}
