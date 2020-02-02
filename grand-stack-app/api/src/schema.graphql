@@ -11,7 +11,7 @@ type Airport {
   city: String!
 }
 
-type Flight {
+type FlightInfo {
   flight_number: String!
 }
 

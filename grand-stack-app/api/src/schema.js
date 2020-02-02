@@ -12,18 +12,17 @@ type Airport {
   city: String!
 }
 
-type Flight {
+type FlightDetails {
   flight_number: String!
 }
 
 type FlightInfo {
-  flight: Flight @neo4j_ignore
+  flight: FlightDetails @neo4j_ignore
   company: Airline @neo4j_ignore
 }
 
 type FlightsSearchResult {
   flights: [FlightInfo] @neo4j_ignore
-  route: [Airport] @neo4j_ignore
   stops: Int!
 }
 
@@ -38,7 +37,7 @@ export const resolvers = {
     FlightsSearch: async (object, params, ctx, resolveInfo) => {
       //console.log('ctx=' + JSON.stringify(ctx));
       var query = "CALL custom.getFlights($from, $to, $date, 1, 6) YIELD result RETURN result";
-      var result = null;
+      var result = [];
       var session = ctx.driver.session();
 
       await new Promise((resolve, reject) => {
@@ -46,10 +45,12 @@ export const resolvers = {
         session
           .run(query, params)
           .then(res => {
-            // res.records.forEach(x => {
-            //   console.log(JSON.stringify(x));
-            // });
-            result = res;
+            var items = res.records.map(rec => rec.get("result"));
+            items.forEach((item) => {
+              console.log(item);
+            });
+            //console.log(items.map(x => x.flights.map(y => y.flight.properties)));
+            result = items;
             resolve();
           })
           .catch(error => {
@@ -60,7 +61,7 @@ export const resolvers = {
 
       });
 
-      console.log('result=' + JSON.stringify(result));      
+      //console.log('result=' + JSON.stringify(result));      
 
       return result;
     }
