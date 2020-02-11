@@ -1,4 +1,9 @@
+import { GraphQLScalarType } from 'graphql';
+
 export const typeDefs = `
+scalar MyDateTime
+scalar MyInt
+
 type Airline {
   code: String!
   name: String!
@@ -14,6 +19,10 @@ type Airport {
 
 type FlightDetails {
   flight_number: String!
+  duration: String!
+  price: MyInt!
+  departs_local: MyDateTime!
+  arrival_local: MyDateTime!
 }
 
 type FlightInfo {
@@ -21,8 +30,16 @@ type FlightInfo {
   company: Airline @neo4j_ignore
 }
 
+type RouteInfo {
+  code: String!
+  name: String!
+  country: String!
+  city: String!
+}
+
 type FlightsSearchResult {
   flights: [FlightInfo] @neo4j_ignore
+  route: [RouteInfo] @neo4j_ignore
   stops: Int!
 }
 
@@ -32,7 +49,32 @@ type Query {
 
 `;
 
+const pad = (s) => {
+  let str = s + "";
+  while (str.length < 2)
+     str = "0" + str;
+  return str;
+}
+
+const myDateTime = new GraphQLScalarType({
+  name: 'MyDateTime',
+  description: 'Description of my dateTime type',
+  serialize(value) {
+    return `${pad(value.day.low)}.${pad(value.month.low)}.${value.year.low} ${pad(value.hour.low)}:${pad(value.minute.low)}`;
+  }
+});
+
+const myInt = new GraphQLScalarType({
+  name: 'MyInt',
+  description: 'Description of my int type',
+  serialize(value) {
+    return value.low;
+  }
+});
+
 export const resolvers = {
+  MyDateTime: myDateTime,
+  MyInt: myInt,
   Query: {
     FlightsSearch: async (object, params, ctx, resolveInfo) => {
       //console.log('ctx=' + JSON.stringify(ctx));

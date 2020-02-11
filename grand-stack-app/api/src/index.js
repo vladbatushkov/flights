@@ -24,7 +24,7 @@ const app = express();
   resolvers,
   config: {
     query: {
-      exclude: ["FlightsSearchResult", "FlightInfo"]
+      exclude: ["FlightsSearchResult", "FlightInfo", "RouteInfo", "FlightDetails"]
     },
     mutation: false,
   }

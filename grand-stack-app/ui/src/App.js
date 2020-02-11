@@ -25,7 +25,7 @@ import {
 
 import AirportList from "./AirportList";
 import AirlineList from "./AirlineList";
-import FlightsSearch from "./FlightsSearch";
+import FlightsSearch from "./FlightsSearch2";
 import classNames from "classnames";
 
 const drawerWidth = 240;
