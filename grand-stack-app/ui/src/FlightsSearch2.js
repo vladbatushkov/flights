@@ -73,17 +73,6 @@ class FlightsSearch extends React.Component {
     this.handleClick = this.handleClick.bind(this);
   }
 
-  handleSortRequest = property => {
-    const orderBy = property;
-    let order = "desc";
-
-    if (this.state.orderBy === property && this.state.order === "desc") {
-      order = "asc";
-    }
-
-    this.setState({ order, orderBy });
-  };
-
   getFilter = () =>
     Object.keys(this.state.filter)
       .map(x => ({ [x + "_contains"]: this.state.filter[x] }))
@@ -102,22 +91,19 @@ class FlightsSearch extends React.Component {
 
   handleClick() {
     this.setState({
-      searchFilter: {
+      searchRequest: {
         from: this.state.filter.from,
         to: this.state.filter.to,
-        date: this.state.filter.date
+        date: this.state.filter.date,
+        startAt: Date.now()
       }
     });
   }
 
   render() {
     const { classes } = this.props;
-    let { searchFilter } = this.state;
-    searchFilter = searchFilter || {
-      from: "Bangkok",
-      to: "Moscow",
-      date: "20200101"
-    };
+    const { searchRequest } = this.state;
+
     return (
       <Paper className={classes.root}>
         <Typography variant="h2" gutterBottom className={classes.margined}>
@@ -207,9 +193,9 @@ class FlightsSearch extends React.Component {
             }
           `}
           variables={{
-            from: searchFilter.from,
-            to: searchFilter.to,
-            date: searchFilter.date
+            from: (searchRequest && searchRequest.from) || "",
+            to: (searchRequest && searchRequest.to) || "",
+            date: (searchRequest && searchRequest.date) || ""
           }}
         >
           {({ loading, error, data }) => {
@@ -217,10 +203,14 @@ class FlightsSearch extends React.Component {
               ? "Loading..."
               : error
               ? "Error"
-              : data.FlightsSearch
+              : data.FlightsSearch.length > 0
               ? null
-              : "Empty";
-
+              : "";
+            const elapsedSec =
+              searchRequest &&
+              Math.floor(
+                (Date.now() - this.state.searchRequest.startAt) / 1000
+              );
             if (msg) return <p className={classes.margined}>{msg}</p>;
 
             return (
@@ -228,7 +218,9 @@ class FlightsSearch extends React.Component {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      Total result: {data.FlightsSearch.length} flights founded
+                      {searchRequest
+                        ? `Total result: ${data.FlightsSearch.length} flights founded in ${elapsedSec} sec`
+                        : ""}
                     </TableCell>
                   </TableRow>
                 </TableHead>
