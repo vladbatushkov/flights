@@ -19,13 +19,15 @@ import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   Language as GlobeIcon,
-  Flight as FlightIcon,
-  Event as EventIcon
+  Flight as AirlineIcon,
+  Event as EventIcon,
+  House as AirportIcon
 } from "@material-ui/icons";
 
 import AirportList from "./AirportList";
 import AirlineList from "./AirlineList";
 import FlightsSearch from "./FlightsSearch2";
+import Map from "./Map";
 import classNames from "classnames";
 
 const drawerWidth = 240;
@@ -185,7 +187,7 @@ class App extends Component {
                   onClick={() => this.setSelectedView("Airports")}
                 >
                   <ListItemIcon>
-                    <GlobeIcon />
+                    <AirportIcon />
                   </ListItemIcon>
                   <ListItemText primary="Airports" />
                 </ListItem>
@@ -195,7 +197,7 @@ class App extends Component {
                   onClick={() => this.setSelectedView("Airlines")}
                 >
                   <ListItemIcon>
-                    <FlightIcon />
+                    <AirlineIcon />
                   </ListItemIcon>
                   <ListItemText primary="Airlines" />
                 </ListItem>
@@ -209,19 +211,27 @@ class App extends Component {
                   </ListItemIcon>
                   <ListItemText primary="Flights Search" />
                 </ListItem>
+
+                <ListItem button onClick={() => this.setSelectedView("Map")}>
+                  <ListItemIcon>
+                    <GlobeIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Map" />
+                </ListItem>
               </div>
             </List>
           </Drawer>
           <main className={classes.content}>
             <div className={classes.appBarSpacer} />
 
-            {/* FIXME: Use proper routing here instead  */}
+            {/* FIXME: Use proper routing here instead :-) Nooo */}
             <Typography component="div" className={classes.chartContainer}>
               {this.state.selectedView === "Airports" ? <AirportList /> : null}
               {this.state.selectedView === "Airlines" ? <AirlineList /> : null}
               {this.state.selectedView === "FlightsSearch" ? (
                 <FlightsSearch />
               ) : null}
+              {this.state.selectedView === "Map" ? <Map /> : null}
             </Typography>
           </main>
         </div>

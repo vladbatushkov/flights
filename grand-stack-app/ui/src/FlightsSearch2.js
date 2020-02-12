@@ -19,7 +19,7 @@ import {
 
 const styles = theme => ({
   root: {
-    maxWidth: 1200,
+    maxWidth: "100%",
     marginTop: theme.spacing.unit * 3,
     overflowX: "auto",
     margin: "auto"
@@ -57,12 +57,6 @@ class FlightsSearch extends React.Component {
     super(props);
 
     this.state = {
-      isLoaded: true,
-      items: [],
-      order: "asc",
-      orderBy: "name",
-      page: 0,
-      rowsPerPage: 100,
       filter: {
         from: "",
         to: "",

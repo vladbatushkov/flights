@@ -17,7 +17,7 @@ import {
 
 const styles = theme => ({
   root: {
-    maxWidth: 1200,
+    maxWidth: "100%",
     marginTop: theme.spacing.unit * 3,
     overflowX: "auto",
     margin: "auto"

@@ -15,6 +15,9 @@ type Airport {
   name: String!
   country: String!
   city: String!
+  location: _Neo4jPoint!
+  destinations: [Airport] @relation(name: "FLIES_TO", direction: "OUT")
+  neighbors: [Airport] @cypher(statement: "MATCH (a:Airport) WHERE this.country = a.country AND this <> a RETURN a")
 }
 
 type FlightDetails {
