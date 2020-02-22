@@ -16,8 +16,8 @@ type Airport {
   country: String!
   city: String!
   location: _Neo4jPoint!
-  destinations: [Airport] @relation(name: "FLIES_TO", direction: "OUT")
-  neighbors: [Airport] @cypher(statement: "MATCH (a:Airport) WHERE this.country = a.country AND this <> a RETURN a")
+  directs: [Airport] @relation(name: "FLIES_TO", direction: "OUT")
+  neighbors: [Airport] @cypher(statement: "MATCH (a:Airport) WHERE this.city = a.city AND this <> a RETURN a")
 }
 
 type FlightDetails {
@@ -75,18 +75,17 @@ const myInt = new GraphQLScalarType({
   }
 });
 
+const query = "CALL custom.getFlights($from, $to, $date, 1, 6) YIELD result RETURN result";
+
 export const resolvers = {
   MyDateTime: myDateTime,
   MyInt: myInt,
   Query: {
     FlightsSearch: async (object, params, ctx, resolveInfo) => {
-      //console.log('ctx=' + JSON.stringify(ctx));
-      var query = "CALL custom.getFlights($from, $to, $date, 1, 6) YIELD result RETURN result";
-      var result = [];
-      var session = ctx.driver.session();
+      //var result = [];
 
-      await new Promise((resolve, reject) => {
-      
+      var result = await new Promise((resolve, reject) => {        
+        var session = ctx.driver.session();      
         session
           .run(query, params)
           .then(res => {
@@ -95,15 +94,14 @@ export const resolvers = {
               console.log(item);
             });
             //console.log(items.map(x => x.flights.map(y => y.flight.properties)));
-            result = items;
-            resolve();
+            //result = items;
+            resolve(items);
           })
           .catch(error => {
             console.log(error);
-            reject();
+            reject([]);
           })
           .then(() => session.close());
-
       });
 
       //console.log('result=' + JSON.stringify(result));      
