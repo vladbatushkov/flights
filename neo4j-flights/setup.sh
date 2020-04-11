@@ -11,15 +11,26 @@ create_index()
 	echo "CREATE INDEX ON ($1) COMPLETE"
 }
 
-create_procedure_getFlights()
+create_procedure_getFlightsNodes()
 {
-    echo "CREATE PROCEDURE getFlights"
-	until cat getFlights.cql | cypher-shell -u neo4j -p test --format plain
+    echo "CREATE PROCEDURE getFlightsNodes"
+	until cat getFlightsNodes.cql | cypher-shell -u neo4j -p test --format plain
 	do
-	  echo "CREATE PROCEDURE getFlights FAILED, SLEEPING"
+	  echo "CREATE PROCEDURE getFlightsNodes FAILED, SLEEPING"
 	  sleep 10
 	done
-	echo "CREATE PROCEDURE getFlights COMPLETE"
+	echo "CREATE PROCEDURE getFlightsNodes COMPLETE"
+}
+
+create_procedure_getFlightsObjects()
+{
+    echo "CREATE PROCEDURE getFlightsObjects"
+	until cat getFlightsObjects.cql | cypher-shell -u neo4j -p test --format plain
+	do
+	  echo "CREATE PROCEDURE getFlightsObjects FAILED, SLEEPING"
+	  sleep 10
+	done
+	echo "CREATE PROCEDURE getFlightsObjects COMPLETE"
 }
 
 while true; do
@@ -28,7 +39,8 @@ while true; do
         echo "Setup Start"
         create_index "Airport" "city"
         create_index "AirportDay" "code"
-        create_procedure_getFlights
+        create_procedure_getFlightsNodes
+        create_procedure_getFlightsObjects
         echo "Setup End"
         break
     else

@@ -1,4 +1,4 @@
-CALL apoc.custom.asProcedure("getFlights",
+CALL apoc.custom.asProcedure("getFlightsNodes",
 "WITH { a: $a, b: $b, date: $date, tmin: $tmin, tmax: $tmax } as params
 MATCH (a:Airport { city: params.a })
 WITH params, AVG(a.location.latitude) as ala, AVG(a.location.longitude) as alo
@@ -46,7 +46,7 @@ WITH [x IN apoc.coll.union(direct, apoc.coll.union(transfer, transfers)) WHERE x
 UNWIND results as result
 RETURN result
 ORDER BY result.stops", 'read',
-  [['result','MAP']],[['a','STRING'], ['b','STRING'], ['date','STRING'], ['tmin','INT'], ['tmax','INT']], 'get flights with max 2 transfers')
+  [['result','MAP']],[['a','STRING'], ['b','STRING'], ['date','STRING'], ['tmin','INT'], ['tmax','INT']], 'get flights with max 2 transfers as nodes')
 
 CALL custom.getFlights('Moscow', 'New York', '20200101', 1, 4) YIELD result
 RETURN result

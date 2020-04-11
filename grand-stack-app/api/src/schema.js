@@ -1,13 +1,14 @@
 import { GraphQLScalarType } from 'graphql';
+import { neo4jgraphql  } from 'neo4j-graphql-js';
+import { Neo4jDate } from 'neo4j-graphql-js/dist/augment/types/temporal';
 
 export const typeDefs = `
-scalar MyDateTime
-scalar MyInt
+scalar FlightsDateTime
+scalar FlightsInt
 
-type Airline {
-  code: String!
-  name: String!
-  country: String!
+type FlightDetails {
+  departs_local: FlightsDateTime!
+  arrival_local: FlightsDateTime!
 }
 
 type Airport {
@@ -15,17 +16,23 @@ type Airport {
   name: String!
   country: String!
   city: String!
-  location: _Neo4jPoint!
+  location: Point!
   directs: [Airport] @relation(name: "FLIES_TO", direction: "OUT")
   neighbors: [Airport] @cypher(statement: "MATCH (a:Airport) WHERE this.city = a.city AND this <> a RETURN a")
+}
+
+type Airline {
+  code: String!
+  name: String!
+  country: String!
 }
 
 type FlightDetails {
   flight_number: String!
   duration: String!
-  price: MyInt!
-  departs_local: MyDateTime!
-  arrival_local: MyDateTime!
+  price: FlightsInt!
+  departs_local: FlightsDateTime!
+  arrival_local: FlightsDateTime!
 }
 
 type FlightInfo {
@@ -43,11 +50,12 @@ type RouteInfo {
 type FlightsSearchResult {
   flights: [FlightInfo] @neo4j_ignore
   route: [RouteInfo] @neo4j_ignore
-  stops: Int!
+  stops: FlightsInt! 
 }
 
 type Query {
-  FlightsSearch(from: String, to: String, date: String): [FlightsSearchResult]
+  FlightsSearchObjects(from: String, to: String, date: String): [FlightsSearchResult]
+  FlightsSearchNodes(from: String, to: String, date: String): [FlightsSearchResult] @cypher(statement: "CALL custom.getFlightsNodes($from, $to, $date, 1, 6) YIELD result RETURN result")
 }
 
 `;
@@ -59,53 +67,41 @@ const pad = (s) => {
   return str;
 }
 
-const myDateTime = new GraphQLScalarType({
-  name: 'MyDateTime',
+const flightsDateTime = new GraphQLScalarType({
+  name: 'FlightsDateTime',
   description: 'Description of my dateTime type',
   serialize(value) {
     return `${pad(value.day.low)}.${pad(value.month.low)}.${value.year.low} ${pad(value.hour.low)}:${pad(value.minute.low)}`;
   }
 });
 
-const myInt = new GraphQLScalarType({
-  name: 'MyInt',
+const flightsInt = new GraphQLScalarType({
+  name: 'FlightsInt',
   description: 'Description of my int type',
   serialize(value) {
     return value.low;
   }
 });
 
-const query = "CALL custom.getFlights($from, $to, $date, 1, 6) YIELD result RETURN result";
+const query = "CALL custom.getFlightsObjects($from, $to, $date, 2, 6) YIELD result RETURN result";
 
 export const resolvers = {
-  MyDateTime: myDateTime,
-  MyInt: myInt,
+  FlightsInt: flightsInt,
+  FlightsDateTime: flightsDateTime,
   Query: {
-    FlightsSearch: async (object, params, ctx, resolveInfo) => {
-      //var result = [];
-
-      var result = await new Promise((resolve, reject) => {        
-        var session = ctx.driver.session();      
-        session
-          .run(query, params)
-          .then(res => {
-            var items = res.records.map(rec => rec.get("result"));
-            items.forEach((item) => {
-              console.log(item);
-            });
-            //console.log(items.map(x => x.flights.map(y => y.flight.properties)));
-            //result = items;
-            resolve(items);
-          })
-          .catch(error => {
-            console.log(error);
-            reject([]);
-          })
-          .then(() => session.close());
-      });
-
-      //console.log('result=' + JSON.stringify(result));      
-
+    FlightsSearchObjects : async (object, params, ctx, resolveInfo) => {
+      var result;       
+      var session = ctx.driver.session();      
+      await session
+        .run(query, params)
+        .then(res => {
+          result = res.records.map(rec => rec.get("result"));
+        })
+        .catch(error => {
+          result = [];
+          console.log(error);
+        })
+        .then(() => session.close());
       return result;
     }
   }

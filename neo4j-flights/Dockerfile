@@ -7,7 +7,8 @@ ENV NEO4J_AUTH=neo4j/test
 COPY import.sh import.sh
 COPY import/*.csv import/
 
-COPY getFlights.cql getFlights.cql
+COPY getFlightsObjects.cql getFlightsObjects.cql
+COPY getFlightsNodes.cql getFlightsNodes.cql
 COPY setup.sh setup.sh
 COPY wrapper.sh wrapper.sh
 

@@ -1,8 +1,7 @@
-//import { typeDefs, resolvers } from "./graphql-schema";
 import { typeDefs, resolvers } from "./schema";
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
-import { v1 as neo4j } from "neo4j-driver";
+import neo4j from 'neo4j-driver';
 import { makeAugmentedSchema } from "neo4j-graphql-js";
 import dotenv from "dotenv";
 
@@ -19,7 +18,7 @@ const app = express();
  * https://grandstack.io/docs/neo4j-graphql-js-api.html#makeaugmentedschemaoptions-graphqlschema
  */
 
- const schema = makeAugmentedSchema({
+const schema = makeAugmentedSchema({
   typeDefs,
   resolvers,
   config: {
@@ -27,6 +26,8 @@ const app = express();
       exclude: ["FlightsSearchResult", "FlightInfo", "RouteInfo", "FlightDetails"]
     },
     mutation: false,
+    temporal: true,
+    debug: true
   }
 })
 
