@@ -18,7 +18,7 @@
     "apollo-cache-inmemory": "^1.6.5",
     "apollo-client": "^2.6.8",
     "apollo-link-http": "^1.5.17",
-    "apollo-server": "^2.25.3",
+    "apollo-server": "^2.25.4",
     "dotenv": "^7.0.0",
     "graphql-tag": "^2.10.3",
     "neo4j-driver": "^4.0.1",
