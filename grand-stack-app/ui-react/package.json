@@ -27,7 +27,7 @@
   "devDependencies": {
     "http-proxy-middleware": "^0.20.0",
     "husky": "^2.7.0",
-    "lint-staged": "^8.2.1"
+    "lint-staged": "^13.1.0"
   },
   "husky": {
     "hooks": {
